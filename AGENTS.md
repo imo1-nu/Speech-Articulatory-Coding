@@ -2,8 +2,8 @@
 
 このリポジトリでは、以下の役割を維持する。
 
-- `upstream-original`: 著者版を保持するブランチ。著者リポジトリの `origin/main` を追跡し、独自の変更は加えない。
-- `main`: 研究で使用する安定版。動作を確認した変更を取り込む。
+- `upstream-original`: 著者版を保持するブランチ。著者リポジトリの `upstream/main` を追跡し、独自の変更は加えない。
+- `main`: 研究で使用する安定版。動作を確認した変更を取り込み、自分の fork の `origin/main` と同期する。
 - 作業ブランチ: 新しい研究・実験・修正は、必ず `main` から新しく作成したブランチで行う。
 
 ## 作業手順
@@ -22,14 +22,15 @@ git switch -c research/<topic>
 ## 初期状態とリモート
 
 - 運用開始時の著者版コミット: `d59139b` (`Update setup.py`)。
-- `origin` は著者リポジトリ `https://github.com/imo1-nu/Speech-Articulatory-Coding` を指す。
-- `upstream-original` の追跡先は `origin/main` とする。安定版の `main` は著者版の `origin/main` を直接追跡しない。
+- `origin` は自分の fork `https://github.com/imo1-nu/Speech-Articulatory-Coding` を指す。
+- `upstream` は著者リポジトリ `https://github.com/Berkeley-Speech-Group/Speech-Articulatory-Coding` を指す。
+- `upstream-original` の追跡先は `upstream/main` とする。安定版の `main` は `origin/main` を追跡する。
 - 著者版の更新は、作業ツリーがクリーンな状態で以下のように取得する。早送りできない場合は履歴を確認し、強制的に上書きしない。
 
 ```sh
-git fetch origin
+git fetch upstream
 git switch upstream-original
-git merge --ff-only origin/main
+git merge --ff-only upstream/main
 git switch main
 git switch -c research/update-upstream
 git merge upstream-original

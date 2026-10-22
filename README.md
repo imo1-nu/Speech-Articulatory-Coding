@@ -9,8 +9,8 @@ This is the official code base for [Coding Speech through Vocal Tract Kinematics
 
 ## このリポジトリでの研究運用
 
-- `upstream-original`: 著者版を保持し、著者リポジトリの `origin/main` を追跡する。
-- `main`: 研究で使用する、動作確認済みの安定版。
+- `upstream-original`: 著者版を保持し、著者リポジトリの `upstream/main` を追跡する。
+- `main`: 研究で使用する、動作確認済みの安定版。自分の fork の `origin/main` と同期する。
 - 新しい研究・実験・修正は、必ず `main` から新しい作業ブランチを作成して進める。検証した変更を `main` に取り込む。
 
 ```sh
