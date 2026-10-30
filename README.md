@@ -64,6 +64,25 @@ with np.load("outputs/features.npz", allow_pickle=False) as features:
 # ema, pitch, loudness, periodicity, pitch_stats, spk_emb, ft_len
 ```
 
+### 調音アニメーション
+
+保存した特徴量と対応する音声から、音声付き MP4（1080 × 1080、50 fps）を生成できる。
+白背景・注釈なしの構図と配色は、公式の `lock-rock` 動画に合わせている。
+
+```sh
+uv run --no-project --python "$HOME/.local/share/sparc/venv/bin/python" \
+    scripts/visualize_articulation.py outputs/features.npz outputs/resynthesized.wav \
+    --output outputs/vocal_tract.mp4
+```
+
+基準となる投影輪郭と配色は、[公式デモ動画](https://berkeley-speech-group.github.io/sparc-demo/static/interp/lock_rock_alpha_1_0.mp4)
+から抽出し、`scripts/assets/vocal_tract_reference.json` に保存している。
+その輪郭を、今回の EMA から計算した舌・唇・下顎の変位で連続的に変形させる。
+EMA は正規化された座標のため、変位の表示倍率と輪郭の変形は独自の模式的な対応付けであり、
+著者の未公開の描画処理や話者の実測形状を再現するものではない。出典とこの制約は MP4 のメタデータにも記録する。
+座標の正規化については [SPARC 論文の Articulatory Analysis](https://arxiv.org/html/2406.12998v2#S3.SS1) を参照。
+`SPARC_ENV_DIR` を設定した環境では、上の Python パスをその環境の `bin/python` に置き換える。
+
 ## Installation
 
 ```
