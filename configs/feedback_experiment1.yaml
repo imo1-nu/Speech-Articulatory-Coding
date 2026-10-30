@@ -1,0 +1,38 @@
+# Times are relative to each decoded WAV, NOT the original database recording.
+model: multi
+device: auto
+seed: 20261030
+torch_threads: 4
+output: outputs/feedback_experiment1
+manifest: datasets/rtmridb_vowels/s1_mu1_wav/manifest.json
+inputs:
+  - label: a
+    wav: datasets/rtmridb_vowels/s1_mu1_wav/a.wav
+    start_s: 0.48
+    end_s: 0.66
+  - label: i
+    wav: datasets/rtmridb_vowels/s1_mu1_wav/i.wav
+    start_s: 0.48
+    end_s: 0.64
+  - label: u
+    wav: datasets/rtmridb_vowels/s1_mu1_wav/u.wav
+    start_s: 0.36
+    end_s: 0.56
+formants:
+  # F0 uses the same min_valid_frames/fraction and CV summary criteria.
+  # Ordered acoustic output vector is [F0, F1, F2, F3], all measured from audio.
+  time_step_s: 0.01
+  max_number_of_formants: 5
+  ceiling_hz: 5000
+  window_length_s: 0.025
+  pre_emphasis_hz: 50
+  pitch_floor_hz: 60
+  pitch_ceiling_hz: 400
+  voicing_threshold: 0.45
+  ranges_hz: [[150, 1300], [400, 3500], [1200, 4800]]
+  max_bandwidth_hz: [400, 600, 800]
+  local_deviation_hz: [150, 250, 300]
+  min_valid_frames: 10
+  min_valid_fraction: 0.8
+  max_coefficient_of_variation: 0.15
+  sensitivity_ceilings_hz: [4500, 5500]

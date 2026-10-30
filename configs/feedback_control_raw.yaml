@@ -1,0 +1,38 @@
+experiment1_config: configs/feedback_experiment1.yaml
+baseline_results: outputs/feedback_experiment1_f0
+output: outputs/feedback_control_{label}_raw
+label: a
+device: auto
+seed: 20261030
+primary_features: [F1, F2]
+observed_features: [F0, F1, F2, F3]
+feature_policy: raw
+# Diagnostics are reported; no acoustic or prediction-quality gate blocks trials.
+require_jacobian_gate: false
+reference_labels: [a, i, u]
+window:
+  center_s: null  # midpoint of each vowel's saved analysis interval
+  sigma_s: 0.06
+  radius_s: 0.18
+epsilons_sd: [0.01, 0.02, 0.05, 0.10]
+validation:
+  seeds: [101, 102, 103, 104]
+  amplitudes_sd: [0.02, 0.05]
+  max_median_relative_prediction_error: 0.5
+  min_median_cosine: 0.8
+  min_valid_fraction: 0.9
+  max_primary_frame_shift_hz: [150, 250]
+recovery:
+  seeds: [201, 202, 203, 204]
+  amplitudes_sd: [0.05, 0.10]
+  gains: [0.1, 0.25, 0.5, 1.0]
+  regularizations: [0.000001, 0.0001, 0.01]
+  max_step_norm_sd: 0.10
+  max_excursion_norm_sd: 0.5
+source_correction:
+  max_iterations: 10
+  gains: [1.0, 0.5, 0.25, 0.1]
+  regularizations: [0.000001, 0.0001, 0.01]
+  max_step_norm_sd: 0.10
+  max_excursion_norm_sd: 0.5
+  relative_error_tolerance: 0.01

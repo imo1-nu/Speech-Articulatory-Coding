@@ -1,0 +1,2 @@
+# In addition to the existing requirements-resynthesis.txt environment.
+praat-parselmouth==0.4.7
