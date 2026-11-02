@@ -32,7 +32,6 @@
 | `research/jsut-window-sweep` | `3df75e4266466ff4bd1c1502d86e65570ed4a178` | main統合・push確認後にローカル枝を削除 |
 | `research/resynthesis-trial` | `e22b6e50f09918d6e03529d20f1fbc6674ca0c6a` | 保持 |
 | `upstream-original` | `d59139be64cdbd5a6cb76c73fda00af0d0e97e59` | 保持 |
-| `origin` | `3df75e4266466ff4bd1c1502d86e65570ed4a178` | main統合・push確認後にローカル枝を削除 |
 
 ## 機能別の保存コミット
 

@@ -144,12 +144,6 @@
       "old_tip": "d59139be64cdbd5a6cb76c73fda00af0d0e97e59",
       "upstream": "upstream/main",
       "action": "keep"
-    },
-    {
-      "name": "origin",
-      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
-      "upstream": null,
-      "action": "delete_local_after_main_push"
     }
   ],
   "remote_branches_changed": false
