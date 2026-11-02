@@ -1,0 +1,5 @@
+# Optional objective evaluation tools; install into the existing SPARC environment.
+setuptools==80.9.0
+pyworld==0.3.5
+pysptk==1.0.1
+pystoi==0.4.1
