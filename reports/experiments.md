@@ -5,7 +5,7 @@
 音声・重み・CSV等はローカルの`outputs/`に保持し、移動・削除していない。以下の成果物リンクは同じ作業環境で利用する。
 Gitだけを取得した環境では、この文書に収録した結果概要と手順を参照できる。
 
-JSUT以降のコードは実行時には未コミットだった。今回の機能別コミットはコードの保存・整理であり、過去の実行時点を復元した履歴ではない。
+初回の整理以前に実行したJSUTコードは未コミットだった。今回の機能別コミットはコードの保存・整理であり、過去の実行時点を復元した履歴ではない。
 モデル版・設定・出力の検証記録は各manifestとJSON索引を参照。データがない結果を成功扱いにはしない。
 
 ## 主条件と読み方
@@ -38,6 +38,8 @@ JSUT以降のコードは実行時には未コミットだった。今回の機�
 | 同一発話制御のWhisper large-v3・音響評価 | 完了 | [outputs/jsut_ppg_delay060_step020/audio_metrics](../outputs/jsut_ppg_delay060_step020/audio_metrics/index.html) | [scripts/evaluate_generated_audio.sh](../scripts/evaluate_generated_audio.sh) |
 | A軌道からBのPPGへの制御 | 完了 | [outputs/jsut_ppg_A_to_B](../outputs/jsut_ppg_A_to_B/index.html) | [scripts/cross_utterance_ppg.sh](../scripts/cross_utterance_ppg.sh) |
 | A→BのCER(A/B)と音響評価 | 完了 | [outputs/jsut_ppg_A_to_B/audio_metrics](../outputs/jsut_ppg_A_to_B/audio_metrics/index.html) | [scripts/evaluate_cross_utterance.sh](../scripts/evaluate_cross_utterance.sh) |
+| 量子化なし連続AEの学習 | 完了 | [学習記録](../outputs/jsut_reconstruction_ablation/continuous_ae/) | [学習スクリプト](../scripts/train_continuous_ae.sh) |
+| VQ128・VQ512・連続AEの再構成比較 | 完了 | [音声・カ行候補の比較](../outputs/jsut_reconstruction_ablation/comparison/index.html) | [比較スクリプト](../scripts/compare_trajectory_reconstruction.sh) |
 | JSUT抽出スモークテスト | スモーク | [outputs/jsut_smoke](../outputs/jsut_smoke) | [scripts/extract_jsut.sh](../scripts/extract_jsut.sh) |
 | VQスモークテスト | スモーク | [outputs/jsut_tokens_smoke](../outputs/jsut_tokens_smoke) | [scripts/model_jsut_tokens.sh](../scripts/model_jsut_tokens.sh) |
 | 復号条件修正前の試聴出力 | 置換済み | [outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights](../outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights) | [scripts/compare_jsut_audio.sh](../scripts/compare_jsut_audio.sh) |
@@ -175,6 +177,32 @@ JSUT以降のコードは実行時には未コミットだった。今回の機�
 | horizon_800ms_unedited | 0.95522 | 0.44776 | 0.53426 | 11.51429 | 0.23663 |
 | horizon_800ms_no_feedback | 1.29851 | 1.26866 | 0.41931 | 10.96730 | 0.27083 |
 | horizon_800ms_feedback | 0.98507 | 0.82090 | 0.42314 | 11.08143 | 0.28131 |
+
+### 量子化あり／なしの再構成比較
+
+40 ms・50 Hz、VQ128/512の既存重みを固定し、同じMLPの連続AEを独立学習した。
+軌道はテスト250発話・58,629フレーム、音声は既存の5試聴発話。
+音響指標の参照は元軌道合成で、F0・音量・話者・ゲインは全再構成で同一。CERはJSUT正解文を参照する。
+比較実行ソースは `80498a79f5bdec367040226b4d4d0c93ff538903`。学習AEは量子化なしの参考で、同じビットレートではない。
+
+| 条件 | 重複平均後MSE | 差分MSE | 速度エネルギー比 |
+|---|---|---|---|
+| VQ128 | 0.1067924 | 0.0474726 | 0.9094 |
+| VQ512 | 0.0862074 | 0.0402363 | 0.9093 |
+| 連続AE | 0.0004723 | 0.0003422 | 0.9879 |
+
+| 条件 | CER（比率） | MCD（dB） | STOI |
+|---|---|---|---|
+| 元音声 | 0.09091 | 6.7636 | 0.8401 |
+| 元軌道合成 | 0.14141 | 0.0000 | 1.0000 |
+| VQ128 | 0.42424 | 5.0591 | 0.8757 |
+| VQ512 | 0.41414 | 4.7737 | 0.8919 |
+| 連続AE | 0.15152 | 1.8455 | 0.9900 |
+
+連続AEは元軌道合成に近いSTOI・CERを得た一方、512コード化によるCER改善は小さかった。
+この結果は量子化を含む学習・表現の制約が大きいことを示唆するが、離散ボトルネックの瞬間的な誤差だけを分離した因果推定ではない。
+元軌道合成PPGから選んだk/ky候補9区間の音声・共通スケールのスペクトル・TDX/TDY位置と速度をレポートに掲載した。
+候補は正解音素境界ではなく、音声評価は5発話に限られる。速度損失・音声損失・RVQはこの比較では未導入。
 
 ## 旧実験と保全した履歴
 

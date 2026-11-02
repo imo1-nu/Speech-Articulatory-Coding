@@ -3,7 +3,7 @@
   "generated_at_utc": "20261102T091648Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
-  "historical_provenance_note": "JSUT実行時のコードは未コミット。supporting_implementation_commitは今回保存したコードであり、当時の厳密なソース版ではない。",
+  "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
   "primary_condition": {
     "window_ms": 40,
     "codebook_size": 128,
@@ -103,6 +103,17 @@
         "scripts/cross_utterance_ppg.sh",
         "scripts/evaluate_cross_utterance.sh",
         "tests/test_cross_utterance_ppg.py"
+      ]
+    },
+    {
+      "commit": "80498a79f5bdec367040226b4d4d0c93ff538903",
+      "title": "feat: compare quantized trajectory reconstruction with a continuous AE",
+      "files": [
+        "sparc/continuous_trajectory_ae.py",
+        "sparc/compare_trajectory_reconstruction.py",
+        "scripts/train_continuous_ae.sh",
+        "scripts/compare_trajectory_reconstruction.sh",
+        "tests/test_reconstruction_ablation.py"
       ]
     }
   ],
@@ -2636,6 +2647,237 @@
       ],
       "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
       "depends_on": []
+    },
+    {
+      "id": "continuous-ae",
+      "title": "量子化なし連続AEの学習",
+      "status": "complete",
+      "run_dir": "outputs/jsut_reconstruction_ablation/continuous_ae",
+      "entrypoints": [
+        "scripts/train_continuous_ae.sh"
+      ],
+      "reproduction_command": "bash scripts/train_continuous_ae.sh",
+      "reproduction_commands": [
+        "bash scripts/train_continuous_ae.sh"
+      ],
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_reconstruction_ablation/continuous_ae/config.json",
+          "sha256": "6258c87c73868dd2acdbbe1dd5527739760e64a77bb84668f942039ffb2a0934"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/continuous_ae/history.jsonl",
+          "sha256": "d63d915461053c9378d905336c4f3c9fce99dd817bc82a2f05857ccdbe630503"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/continuous_ae/splits.json",
+          "sha256": "21dc944095063dc785af1fa0b3df87a509a9806a4909947c6467913c0ab9cd54"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/continuous_ae/training_metrics.json",
+          "sha256": "eab798f887f8a9ee3eb41335d4ecca5737f5d1c3ac5936de489f2914e3b45ef2"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "80498a79f5bdec367040226b4d4d0c93ff538903",
+      "depends_on": [
+        "window-sweep"
+      ],
+      "provenance": {
+        "model": "continuous_trajectory_ae",
+        "window_frames": 2,
+        "latent_dim": 16,
+        "frame_rate": 50,
+        "token_stride": 1,
+        "encoder_widths": [
+          24,
+          128,
+          64,
+          16
+        ],
+        "decoder_widths": [
+          16,
+          64,
+          128,
+          24
+        ],
+        "reference_run_dir": "outputs/jsut_window_sweep/window_040ms",
+        "reference_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "seed": 42,
+        "batch_size": 512,
+        "learning_rate": 0.001,
+        "max_epochs": 100,
+        "patience": 10,
+        "minimum_improvement": 1e-05,
+        "objective": "normalized window MSE only, no quantization or codebook/commitment loss",
+        "normalization": "copied exactly from VQ128 training statistics",
+        "device": "cuda",
+        "torch_version": "2.8.0+cu128"
+      },
+      "training_metrics": {
+        "best_epoch": 29,
+        "best_validation_window_mse": 0.0015127370466055824,
+        "test_window_mse": 0.0015080713757230186,
+        "split_utterances": {
+          "train": 4500,
+          "validation": 250,
+          "test": 250
+        },
+        "split_frames": {
+          "train": 1100565,
+          "validation": 59589,
+          "test": 58629
+        }
+      }
+    },
+    {
+      "id": "reconstruction-ablation",
+      "title": "元軌道合成を参照したVQ128・VQ512・連続AE比較",
+      "status": "complete",
+      "run_dir": "outputs/jsut_reconstruction_ablation/comparison",
+      "entrypoints": [
+        "scripts/compare_trajectory_reconstruction.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_trajectory_reconstruction.sh",
+      "reproduction_commands": [
+        "bash scripts/compare_trajectory_reconstruction.sh"
+      ],
+      "report": "outputs/jsut_reconstruction_ablation/comparison/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_reconstruction_ablation/comparison/audio_aggregates.csv",
+          "sha256": "e6e6acb7d74a6ce5a3e8f415a713a442519fd5a15aefdc9bb30f22ea80ed288d"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/comparison/audio_metrics.csv",
+          "sha256": "779d714c4aec91513df7e2e33a6c26cc12eaaa0a1c0bdda89a394ca2d22e3a4d"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/comparison/k_diagnostics.csv",
+          "sha256": "fb488f9d5518ac158d60bd320b6e74262ee2948b39a2e1c1d31ec8f2e086867d"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/comparison/manifest.json",
+          "sha256": "872a4cdbff37f81ad5381f758b5ea5368d62d1d959d85e1e7651ac8626bdd6cd"
+        },
+        {
+          "path": "outputs/jsut_reconstruction_ablation/comparison/verification.json",
+          "sha256": "ce7e5db4a249b6b3f176707816b1a2717b9d2038c4572de553ce0a7e119990b4"
+        }
+      ],
+      "historical_source_commit": "80498a79f5bdec367040226b4d4d0c93ff538903",
+      "supporting_implementation_commit": "80498a79f5bdec367040226b4d4d0c93ff538903",
+      "depends_on": [
+        "continuous-ae",
+        "codebook-sweep",
+        "japanese-ppg"
+      ],
+      "provenance": {
+        "source_commit": "80498a79f5bdec367040226b4d4d0c93ff538903",
+        "comparison_source_sha256": "628b2c13ba4c349355f8008c6224c317a0d6ea308a579ac8708af127a77bf17d",
+        "reference_vq128_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "vq512_sha256": "01703d385ba979b9a93bd4192633ce6f829f4d1392e51f0d6ee8c9f8eb285a63",
+        "ae_sha256": "9a4f54b7da8d9c85347951075d0f6362589a32cc683f6bcdbfe234599b6e340d",
+        "generator_sha256": "15c468c2703172b2423efa0459ff40695ef1f08f8312ad3577ee20d277b0485b",
+        "asr_model": "openai/whisper-large-v3",
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+        "asr_settings": {
+          "language": "ja",
+          "task": "transcribe",
+          "num_beams": 1,
+          "do_sample": false,
+          "max_new_tokens": 256,
+          "prompt": null
+        },
+        "audio_metric_reference": "original trajectory synthesis",
+        "cer_reference": "JSUT gold text"
+      },
+      "test_trajectory_metrics": {
+        "vq128": {
+          "frames": 58629,
+          "normalized_mse": 0.10679242126944856,
+          "delta_mse": 0.047472580911535577,
+          "velocity_energy_ratio": 0.9094299814851402,
+          "trajectory_6_to_10_hz_energy_ratio": 0.6636323557296168
+        },
+        "vq512": {
+          "frames": 58629,
+          "normalized_mse": 0.08620738659380074,
+          "delta_mse": 0.0402362769092795,
+          "velocity_energy_ratio": 0.9092986937186723,
+          "trajectory_6_to_10_hz_energy_ratio": 0.6786342410539704
+        },
+        "continuous_ae": {
+          "frames": 58629,
+          "normalized_mse": 0.0004722706913658544,
+          "delta_mse": 0.00034217440891936814,
+          "velocity_energy_ratio": 0.9879294574860232,
+          "trajectory_6_to_10_hz_energy_ratio": 0.9757595875316466
+        }
+      },
+      "summary_rows": [
+        {
+          "condition": "original",
+          "utterances": 5,
+          "cer": 0.09090909090909091,
+          "character_errors": 9,
+          "reference_characters": 99,
+          "mcd_db": 6.763565988377051,
+          "stoi": 0.8400675246717586,
+          "f0_rmse_hz": 9.123694812525127,
+          "f0_rmse_cents": 73.58450166625559,
+          "vuv_error_rate": 0.07969749854566609
+        },
+        {
+          "condition": "original_ema",
+          "utterances": 5,
+          "cer": 0.1414141414141414,
+          "character_errors": 14,
+          "reference_characters": 99,
+          "mcd_db": 0.0,
+          "stoi": 0.9999999999999994,
+          "f0_rmse_hz": 0.0,
+          "f0_rmse_cents": 0.0,
+          "vuv_error_rate": 0.0
+        },
+        {
+          "condition": "vq128",
+          "utterances": 5,
+          "cer": 0.42424242424242425,
+          "character_errors": 42,
+          "reference_characters": 99,
+          "mcd_db": 5.059096030157827,
+          "stoi": 0.8756775124586522,
+          "f0_rmse_hz": 5.583731921305017,
+          "f0_rmse_cents": 48.55797933483523,
+          "vuv_error_rate": 0.06631762652705062
+        },
+        {
+          "condition": "vq512",
+          "utterances": 5,
+          "cer": 0.41414141414141414,
+          "character_errors": 41,
+          "reference_characters": 99,
+          "mcd_db": 4.773699088068432,
+          "stoi": 0.8918653682060125,
+          "f0_rmse_hz": 5.440297770369614,
+          "f0_rmse_cents": 48.33795395155183,
+          "vuv_error_rate": 0.059336823734729496
+        },
+        {
+          "condition": "continuous_ae",
+          "utterances": 5,
+          "cer": 0.15151515151515152,
+          "character_errors": 15,
+          "reference_characters": 99,
+          "mcd_db": 1.845497220559918,
+          "stoi": 0.9900057822217532,
+          "f0_rmse_hz": 5.325835135906976,
+          "f0_rmse_cents": 41.35800399713149,
+          "vuv_error_rate": 0.038976148923792905
+        }
+      ]
     }
   ]
 }
