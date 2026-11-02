@@ -1,0 +1,156 @@
+{
+  "base_main_commit": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+  "local_branches_before_organization": [
+    {
+      "name": "main",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": "origin/main",
+      "action": "keep"
+    },
+    {
+      "name": "research/audio-resynthesis",
+      "old_tip": "71d36425e7d90d85966b5f6b32cbb8b7eafc7879",
+      "upstream": "origin/research/audio-resynthesis",
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/branch-workflow",
+      "old_tip": "59c9298b4f539c71f707c050f271499dc42e24d4",
+      "upstream": "origin/research/branch-workflow",
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/create-ema-from-jsut",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/feedback-experiment1",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/feedback-jacobian",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/feedback-test",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/feedback-vowels-raw",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/japanese-demo-acoustics",
+      "old_tip": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "upstream": null,
+      "action": "keep"
+    },
+    {
+      "name": "research/jsut-40ms-25hz",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-articulatory-trajectories",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-codebook-sweep",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-cross-utterance-ppg",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-feedback-delay60",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-japanese-ppg",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-ppg-local-search",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-ppg-soft-transition",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-sequential-ppg-feedback",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-token-audio-comparison",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-vq-token-transitions",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-weighted-overlap",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/jsut-window-sweep",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    },
+    {
+      "name": "research/resynthesis-trial",
+      "old_tip": "e22b6e50f09918d6e03529d20f1fbc6674ca0c6a",
+      "upstream": null,
+      "action": "keep"
+    },
+    {
+      "name": "upstream-original",
+      "old_tip": "d59139be64cdbd5a6cb76c73fda00af0d0e97e59",
+      "upstream": "upstream/main",
+      "action": "keep"
+    },
+    {
+      "name": "origin",
+      "old_tip": "3df75e4266466ff4bd1c1502d86e65570ed4a178",
+      "upstream": null,
+      "action": "delete_local_after_main_push"
+    }
+  ],
+  "remote_branches_changed": false
+}
