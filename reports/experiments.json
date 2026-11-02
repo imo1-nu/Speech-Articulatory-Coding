@@ -1,0 +1,2641 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "20261102T091648Z",
+  "repository_paths_are_relative": true,
+  "outputs_versioned_in_git": false,
+  "historical_provenance_note": "JSUT実行時のコードは未コミット。supporting_implementation_commitは今回保存したコードであり、当時の厳密なソース版ではない。",
+  "primary_condition": {
+    "window_ms": 40,
+    "codebook_size": 128,
+    "token_rate_hz": 50,
+    "checkpoint": "outputs/jsut_window_sweep/window_040ms/best.pt",
+    "checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09"
+  },
+  "implementation_commits": [
+    {
+      "commit": "b39d7d4eaea7926280b398fb96f5acb87243e44d",
+      "title": "feat: extract JSUT articulatory trajectories and pitch",
+      "files": [
+        "sparc/extract_jsut.py",
+        "scripts/extract_jsut.sh",
+        "tests/test_extract_jsut.py"
+      ]
+    },
+    {
+      "commit": "03717f3877350d01a1e1a50d0afba29ce697288b",
+      "title": "feat: tokenize trajectories with VQ-VAE and analyze Markov transitions",
+      "files": [
+        "sparc/trajectory_vq.py",
+        "sparc/model_jsut_tokens.py",
+        "scripts/model_jsut_tokens.sh",
+        "tests/test_trajectory_tokens.py"
+      ]
+    },
+    {
+      "commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "title": "feat: compare synthesis and sweep trajectory tokenization settings",
+      "files": [
+        "sparc/compare_jsut_audio.py",
+        "sparc/sweep_jsut_windows.py",
+        "sparc/compare_jsut_token_rates.py",
+        "sparc/sweep_jsut_codebooks.py",
+        "scripts/compare_jsut_audio.sh",
+        "scripts/sweep_jsut_windows.sh",
+        "scripts/compare_jsut_token_rates.sh",
+        "scripts/sweep_jsut_codebooks.sh",
+        "tests/test_compare_jsut_audio.py",
+        "tests/test_window_sweep.py",
+        "tests/test_token_rate_report.py",
+        "tests/test_codebook_sweep.py"
+      ]
+    },
+    {
+      "commit": "79a69288fb974d714f6dbf995548c8c6d5e25310",
+      "title": "feat: extract pinned Japanese PPGs and compare test audio",
+      "files": [
+        "sparc/japanese_ppg.py",
+        "sparc/extract_jsut_ppg.py",
+        "scripts/extract_jsut_ppg.sh",
+        "tests/test_japanese_ppg.py",
+        "third_party/ppgs_ja/LICENSE",
+        "third_party/ppgs_ja/README.md"
+      ]
+    },
+    {
+      "commit": "2b8528788b8c3c9c64a03885e995ede206550347",
+      "title": "feat: edit discrete tokens with PPG loss and transition regularization",
+      "files": [
+        "sparc/local_ppg_search.py",
+        "sparc/sweep_ppg_transition.py",
+        "scripts/local_jsut_ppg_search.sh",
+        "scripts/sweep_ppg_transition.sh",
+        "tests/test_local_ppg_search.py"
+      ]
+    },
+    {
+      "commit": "247214e5acdee160bf80d3a13824b077deb0beaa",
+      "title": "feat: simulate sequential PPG feedback with strict acoustic delay",
+      "files": [
+        "sparc/sequential_ppg_search.py",
+        "sparc/delayed_ppg_search.py",
+        "scripts/compare_sequential_ppg.sh",
+        "scripts/compare_delayed_ppg.sh",
+        "tests/test_sequential_ppg_search.py",
+        "tests/test_delayed_ppg_search.py"
+      ]
+    },
+    {
+      "commit": "66d0fd7d096cad08d5c36c63adce27099dc3fa3c",
+      "title": "feat: evaluate generated audio with Whisper large-v3 and acoustic metrics",
+      "files": [
+        "sparc/evaluate_generated_audio.py",
+        "scripts/evaluate_generated_audio.sh",
+        "requirements-audio-metrics.txt",
+        "tests/test_generated_audio_metrics.py"
+      ]
+    },
+    {
+      "commit": "d700a5859aa87683254b4fd8daa3a82b65486a71",
+      "title": "feat: evaluate cross-utterance A-to-B PPG control",
+      "files": [
+        "sparc/cross_utterance_ppg.py",
+        "sparc/evaluate_cross_utterance.py",
+        "scripts/cross_utterance_ppg.sh",
+        "scripts/evaluate_cross_utterance.sh",
+        "tests/test_cross_utterance_ppg.py"
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "id": "jsut-extraction",
+      "title": "JSUTのEMA・F0抽出",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ema",
+      "entrypoints": [
+        "scripts/extract_jsut.sh"
+      ],
+      "reproduction_command": "bash scripts/extract_jsut.sh --subsets basic5000 --output-dir outputs/jsut_ema",
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_ema/manifest.jsonl",
+          "sha256": "7e23efe7334e17d82b0e3efb49505e393d05e9e8d62444b328c27c276b8c0616"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "b39d7d4eaea7926280b398fb96f5acb87243e44d",
+      "depends_on": [],
+      "reproduction_commands": [
+        "bash scripts/extract_jsut.sh --subsets basic5000 --output-dir outputs/jsut_ema"
+      ]
+    },
+    {
+      "id": "vq-markov",
+      "title": "VQ-VAEと観測トークン遷移",
+      "status": "complete",
+      "run_dir": "outputs/jsut_tokens",
+      "entrypoints": [
+        "scripts/model_jsut_tokens.sh"
+      ],
+      "reproduction_command": "bash scripts/model_jsut_tokens.sh train --features-dir outputs/jsut_ema --run-dir outputs/jsut_tokens",
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_tokens/config.json",
+          "sha256": "40a55500cab75117517cc8d58c0409fde6262d759035d513a8e1d38d81d0768d"
+        },
+        {
+          "path": "outputs/jsut_tokens/history.jsonl",
+          "sha256": "88d268278b95312788cb0f9accfbb42f5fc8a25b43432bb6b591fb80ce98955e"
+        },
+        {
+          "path": "outputs/jsut_tokens/reconstruction_metrics.json",
+          "sha256": "22fa084cadef2d56af2fece435a3cb97dd9040940c458737f8eb91c421bc4037"
+        },
+        {
+          "path": "outputs/jsut_tokens/representatives.json",
+          "sha256": "e941b915c73a1f2204183b87d39c3bc1c643ebf5372bd8d446445e62e891b355"
+        },
+        {
+          "path": "outputs/jsut_tokens/splits.json",
+          "sha256": "21dc944095063dc785af1fa0b3df87a509a9806a4909947c6467913c0ab9cd54"
+        },
+        {
+          "path": "outputs/jsut_tokens/training_metrics.json",
+          "sha256": "48d159d39739b0e26904bcbe454fdf86b68a75ae7c2e736d31739604779abe55"
+        },
+        {
+          "path": "outputs/jsut_tokens/transition_metrics.json",
+          "sha256": "00e3174daf527ab6433ba539450f66e7e354b6bd6534c79161fe87db9285b77a"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "03717f3877350d01a1e1a50d0afba29ce697288b",
+      "artifact_structure": {
+        "training_metrics.json": {},
+        "reconstruction_metrics.json": {},
+        "transition_metrics.json": {}
+      },
+      "depends_on": [
+        "jsut-extraction"
+      ],
+      "reproduction_commands": [
+        "bash scripts/model_jsut_tokens.sh train --features-dir outputs/jsut_ema --run-dir outputs/jsut_tokens",
+        "bash scripts/model_jsut_tokens.sh tokenize --run-dir outputs/jsut_tokens",
+        "bash scripts/model_jsut_tokens.sh transitions --run-dir outputs/jsut_tokens"
+      ]
+    },
+    {
+      "id": "audio-comparison",
+      "title": "元音声・元軌道・再構成軌道の試聴",
+      "status": "complete",
+      "run_dir": "outputs/jsut_tokens/audio_comparison",
+      "entrypoints": [
+        "scripts/compare_jsut_audio.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_jsut_audio.sh",
+      "report": "outputs/jsut_tokens/audio_comparison/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_tokens/audio_comparison/manifest.json",
+          "sha256": "a27192bb7b74478e050ade200df3af229b19adf8183c23f5055fbfd50023f154"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 5
+        }
+      },
+      "depends_on": [
+        "vq-markov"
+      ],
+      "reproduction_commands": [
+        "bash scripts/compare_jsut_audio.sh"
+      ]
+    },
+    {
+      "id": "weighted-overlap",
+      "title": "重み付き重複復号の比較",
+      "status": "complete",
+      "run_dir": "outputs/jsut_tokens/audio_comparison_weighted",
+      "entrypoints": [
+        "scripts/compare_jsut_audio.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_jsut_audio.sh --run-dir outputs/jsut_tokens --include-weighted --output-dir outputs/jsut_tokens/audio_comparison_weighted",
+      "report": "outputs/jsut_tokens/audio_comparison_weighted/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_tokens/audio_comparison_weighted/manifest.json",
+          "sha256": "87ee5248e0a656ae09c39008eb7a9f05e45ad83d0aa2d6e6e10e211bf43bcb6e"
+        },
+        {
+          "path": "outputs/jsut_tokens/audio_comparison_weighted/weighted_metrics.json",
+          "sha256": "e3b2775717e0238ba3551c43309b9d91aa46020674c6054faf7c9aadc16569e3"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 5
+        }
+      },
+      "depends_on": [
+        "vq-markov"
+      ],
+      "reproduction_commands": [
+        "bash scripts/compare_jsut_audio.sh --run-dir outputs/jsut_tokens --include-weighted --output-dir outputs/jsut_tokens/audio_comparison_weighted"
+      ]
+    },
+    {
+      "id": "window-sweep",
+      "title": "20〜180 ms・重みあり／なし",
+      "status": "complete",
+      "run_dir": "outputs/jsut_window_sweep",
+      "entrypoints": [
+        "scripts/sweep_jsut_windows.sh"
+      ],
+      "reproduction_command": "bash scripts/sweep_jsut_windows.sh",
+      "report": "outputs/jsut_window_sweep/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_window_sweep/experiment.json",
+          "sha256": "63ce817e5f495e07bacc866e1beccbddc6bdecf32c330ea04f94f5ab3b746de8"
+        },
+        {
+          "path": "outputs/jsut_window_sweep/summary.csv",
+          "sha256": "fe5f532b731e4ab619ace44534a94de32f820346a72a219cd4ee478e2818cb51"
+        },
+        {
+          "path": "outputs/jsut_window_sweep/summary.json",
+          "sha256": "e26d67949dd55cee6a1c48574544608d27af1708a27d116d9b7254047dcd7a39"
+        },
+        {
+          "path": "outputs/jsut_window_sweep/verification.json",
+          "sha256": "ff065a560e0e94d6d04057bdc45cf289f66b3848b72a82db23af5a4e8cb8d8f8"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "summary_rows": [
+        {
+          "window_ms": 20,
+          "weighting": "uniform",
+          "validation_mse": 0.12936598912484615,
+          "test_mse": 0.12975812805430853,
+          "test_delta_mse": 0.11173263422372359,
+          "test_velocity_energy_ratio": 1.614498441244128,
+          "test_6_to_10_hz_energy_ratio": 0.9471059468913274,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.37160608796084
+        },
+        {
+          "window_ms": 20,
+          "weighting": "triangular",
+          "validation_mse": 0.12936598912484615,
+          "test_mse": 0.12975812805430853,
+          "test_delta_mse": 0.11173263422372359,
+          "test_velocity_energy_ratio": 1.614498441244128,
+          "test_6_to_10_hz_energy_ratio": 0.9471059468913274,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.37160608796084
+        },
+        {
+          "window_ms": 40,
+          "weighting": "uniform",
+          "validation_mse": 0.10644735021874983,
+          "test_mse": 0.10679242126725731,
+          "test_delta_mse": 0.047472580906689675,
+          "test_velocity_energy_ratio": 0.9094299816065913,
+          "test_6_to_10_hz_energy_ratio": 0.6636323559182061,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.87012405400799
+        },
+        {
+          "window_ms": 40,
+          "weighting": "triangular",
+          "validation_mse": 0.10644735021874983,
+          "test_mse": 0.10679242126725731,
+          "test_delta_mse": 0.047472580906689675,
+          "test_velocity_energy_ratio": 0.9094299816065913,
+          "test_6_to_10_hz_energy_ratio": 0.6636323559182061,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.87012405400799
+        },
+        {
+          "window_ms": 60,
+          "weighting": "uniform",
+          "validation_mse": 0.11331798402347901,
+          "test_mse": 0.11350271471990363,
+          "test_delta_mse": 0.04056166685305479,
+          "test_velocity_energy_ratio": 0.7262707003549467,
+          "test_6_to_10_hz_energy_ratio": 0.5085767745417152,
+          "test_used_codes": 128,
+          "test_code_perplexity": 122.09124688712681
+        },
+        {
+          "window_ms": 60,
+          "weighting": "triangular",
+          "validation_mse": 0.11283644408014952,
+          "test_mse": 0.11310854555562393,
+          "test_delta_mse": 0.04102617146673254,
+          "test_velocity_energy_ratio": 0.757885053236441,
+          "test_6_to_10_hz_energy_ratio": 0.5448402875721381,
+          "test_used_codes": 128,
+          "test_code_perplexity": 122.09124688712681
+        },
+        {
+          "window_ms": 80,
+          "weighting": "uniform",
+          "validation_mse": 0.12429647562185027,
+          "test_mse": 0.12437558337984739,
+          "test_delta_mse": 0.04009420015604909,
+          "test_velocity_energy_ratio": 0.6277027262209157,
+          "test_6_to_10_hz_energy_ratio": 0.4205143123211878,
+          "test_used_codes": 128,
+          "test_code_perplexity": 122.63638162360198
+        },
+        {
+          "window_ms": 80,
+          "weighting": "triangular",
+          "validation_mse": 0.12183335840639205,
+          "test_mse": 0.1219330213022888,
+          "test_delta_mse": 0.03812506197585745,
+          "test_velocity_energy_ratio": 0.6301484068121777,
+          "test_6_to_10_hz_energy_ratio": 0.4352735778133163,
+          "test_used_codes": 128,
+          "test_code_perplexity": 122.63638162360198
+        },
+        {
+          "window_ms": 100,
+          "weighting": "uniform",
+          "validation_mse": 0.13375688920368842,
+          "test_mse": 0.13400160525409535,
+          "test_delta_mse": 0.040484342717268244,
+          "test_velocity_energy_ratio": 0.5715341411903081,
+          "test_6_to_10_hz_energy_ratio": 0.3501884938743813,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.52406964564965
+        },
+        {
+          "window_ms": 100,
+          "weighting": "triangular",
+          "validation_mse": 0.13107955172727812,
+          "test_mse": 0.13153601255797318,
+          "test_delta_mse": 0.03958749679917951,
+          "test_velocity_energy_ratio": 0.5718744670940658,
+          "test_6_to_10_hz_energy_ratio": 0.3535659065084593,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.52406964564965
+        },
+        {
+          "window_ms": 120,
+          "weighting": "uniform",
+          "validation_mse": 0.14718285646739956,
+          "test_mse": 0.14746533522337493,
+          "test_delta_mse": 0.042889007042466586,
+          "test_velocity_energy_ratio": 0.498987527264112,
+          "test_6_to_10_hz_energy_ratio": 0.2747845364958041,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.77770077253227
+        },
+        {
+          "window_ms": 120,
+          "weighting": "triangular",
+          "validation_mse": 0.14303348329347398,
+          "test_mse": 0.14344222298463327,
+          "test_delta_mse": 0.041940035844901566,
+          "test_velocity_energy_ratio": 0.49745289447084395,
+          "test_6_to_10_hz_energy_ratio": 0.2746786350697543,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.77770077253227
+        },
+        {
+          "window_ms": 140,
+          "weighting": "uniform",
+          "validation_mse": 0.16308749085593652,
+          "test_mse": 0.16333100622317823,
+          "test_delta_mse": 0.04592435221055643,
+          "test_velocity_energy_ratio": 0.4480526921451354,
+          "test_6_to_10_hz_energy_ratio": 0.21195638484833432,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.83081189826069
+        },
+        {
+          "window_ms": 140,
+          "weighting": "triangular",
+          "validation_mse": 0.15886267097426415,
+          "test_mse": 0.1590368597495719,
+          "test_delta_mse": 0.045635340504419676,
+          "test_velocity_energy_ratio": 0.4492824757299178,
+          "test_6_to_10_hz_energy_ratio": 0.21352434735656775,
+          "test_used_codes": 128,
+          "test_code_perplexity": 120.83081189826069
+        },
+        {
+          "window_ms": 160,
+          "weighting": "uniform",
+          "validation_mse": 0.1784494664217677,
+          "test_mse": 0.17858848825380894,
+          "test_delta_mse": 0.04983078416516806,
+          "test_velocity_energy_ratio": 0.4005974084778935,
+          "test_6_to_10_hz_energy_ratio": 0.15830725751298413,
+          "test_used_codes": 128,
+          "test_code_perplexity": 121.55970453793698
+        },
+        {
+          "window_ms": 160,
+          "weighting": "triangular",
+          "validation_mse": 0.17312254361690768,
+          "test_mse": 0.17300052397909632,
+          "test_delta_mse": 0.0492443741658885,
+          "test_velocity_energy_ratio": 0.4022744433652927,
+          "test_6_to_10_hz_energy_ratio": 0.15945557525052084,
+          "test_used_codes": 128,
+          "test_code_perplexity": 121.55970453793698
+        },
+        {
+          "window_ms": 180,
+          "weighting": "uniform",
+          "validation_mse": 0.1947182992404203,
+          "test_mse": 0.1956838311533103,
+          "test_delta_mse": 0.053350650861700225,
+          "test_velocity_energy_ratio": 0.3517140006541493,
+          "test_6_to_10_hz_energy_ratio": 0.12361212660305525,
+          "test_used_codes": 128,
+          "test_code_perplexity": 119.77144111074236
+        },
+        {
+          "window_ms": 180,
+          "weighting": "triangular",
+          "validation_mse": 0.1876046892852821,
+          "test_mse": 0.18840250409670958,
+          "test_delta_mse": 0.05292416983263581,
+          "test_velocity_energy_ratio": 0.3593633019898669,
+          "test_6_to_10_hz_energy_ratio": 0.12571875941858787,
+          "test_used_codes": 128,
+          "test_code_perplexity": 119.77144111074236
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {},
+        "summary.json": {},
+        "experiment.json": {}
+      },
+      "depends_on": [
+        "jsut-extraction"
+      ],
+      "reproduction_commands": [
+        "bash scripts/sweep_jsut_windows.sh"
+      ]
+    },
+    {
+      "id": "token-rate",
+      "title": "40 ms・50 Hzと25 Hz",
+      "status": "complete",
+      "run_dir": "outputs/jsut_40ms_25hz_comparison",
+      "entrypoints": [
+        "scripts/compare_jsut_token_rates.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_jsut_token_rates.sh",
+      "report": "outputs/jsut_40ms_25hz_comparison/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_40ms_25hz_comparison/boundary_metrics.json",
+          "sha256": "af6f35cbf3628ada1de948a399cb81d97d148c76a1f885018a97f798985793af"
+        },
+        {
+          "path": "outputs/jsut_40ms_25hz_comparison/summary.csv",
+          "sha256": "ee68261f314f0c15a45936fca0d3537a5e23d61121e8447a61e1292ab86bd37b"
+        },
+        {
+          "path": "outputs/jsut_40ms_25hz_comparison/summary.json",
+          "sha256": "7d40446df2e012b9d3122544e44ba5a6f2828f070df006e52a024f90021a8b75"
+        },
+        {
+          "path": "outputs/jsut_40ms_25hz_comparison/verification.json",
+          "sha256": "b1030097cd00b0e793db561e940d5a207004841add5e43324415e9136a80187b"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "summary_rows": [
+        {
+          "token_rate_hz": 50,
+          "window_ms": 40,
+          "nominal_token_id_bps": 350,
+          "validation_mse": 0.10644735021874983,
+          "test_mse": 0.10679242126725731,
+          "test_delta_mse": 0.047472580906689675,
+          "test_velocity_energy_ratio": 0.9094299816065913,
+          "test_6_to_10_hz_energy_ratio": 0.6636323559182061,
+          "test_tokens": 58629,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.87012405400799
+        },
+        {
+          "token_rate_hz": 25,
+          "window_ms": 40,
+          "nominal_token_id_bps": 175,
+          "validation_mse": 0.14980539783877642,
+          "test_mse": 0.15023923258953964,
+          "test_delta_mse": 0.14088741200820284,
+          "test_velocity_energy_ratio": 1.6976439587371057,
+          "test_6_to_10_hz_energy_ratio": 0.7792382043172422,
+          "test_tokens": 29380,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.42680919417498
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {},
+        "summary.json": {}
+      },
+      "depends_on": [
+        "window-sweep"
+      ],
+      "reproduction_commands": [
+        "bash scripts/compare_jsut_token_rates.sh"
+      ]
+    },
+    {
+      "id": "codebook-sweep",
+      "title": "20/40 ms・64/128/256/512コード",
+      "status": "complete",
+      "run_dir": "outputs/jsut_codebook_sweep",
+      "entrypoints": [
+        "scripts/sweep_jsut_codebooks.sh"
+      ],
+      "reproduction_command": "bash scripts/sweep_jsut_codebooks.sh",
+      "report": "outputs/jsut_codebook_sweep/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_codebook_sweep/experiment.json",
+          "sha256": "0d02c8b17323f0385f4f22baacc0a9ff936fe2e280d288566f1196a038b06d97"
+        },
+        {
+          "path": "outputs/jsut_codebook_sweep/summary.csv",
+          "sha256": "e218aa5c6be8d3343e7dcd978226dc958fbb5dea702b2612b0fa27f908882da5"
+        },
+        {
+          "path": "outputs/jsut_codebook_sweep/summary.json",
+          "sha256": "2d533ea21ba8be1e95f6bb162bf9d2b96c6367c7102e30f35fe6632e976af76f"
+        },
+        {
+          "path": "outputs/jsut_codebook_sweep/verification.json",
+          "sha256": "e5442e39d360abbeb42ef5efea76ff3a0faa8c866208c915b602a2e088c33fd6"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "summary_rows": [
+        {
+          "window_ms": 20,
+          "codebook_size": 64,
+          "token_rate": 50,
+          "nominal_token_id_bps": 300,
+          "validation_mse": 0.16045239014641624,
+          "test_mse": 0.16102737107013343,
+          "test_delta_mse": 0.13999482281165493,
+          "test_velocity_energy_ratio": 1.790401141188821,
+          "test_6_to_10_hz_energy_ratio": 0.9586527313315453,
+          "test_used_codes": 64,
+          "test_code_perplexity": 62.25745765153296,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0064/window_020ms",
+          "checkpoint_sha256": "a391b43c1ce186946c97b98b8ffdf1e35a0b0cc8462e5fcbb193db8e36046000"
+        },
+        {
+          "window_ms": 20,
+          "codebook_size": 128,
+          "token_rate": 50,
+          "nominal_token_id_bps": 350,
+          "validation_mse": 0.12936598912484615,
+          "test_mse": 0.12975812805430853,
+          "test_delta_mse": 0.11173263422372359,
+          "test_velocity_energy_ratio": 1.614498441244128,
+          "test_6_to_10_hz_energy_ratio": 0.9471059468913274,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.37160608796084,
+          "run_dir": "outputs/jsut_window_sweep/window_020ms",
+          "checkpoint_sha256": "1204bdda5efd248379a66ee591c605b719315a1db4392d32a0cd1bf6b7663862"
+        },
+        {
+          "window_ms": 20,
+          "codebook_size": 256,
+          "token_rate": 50,
+          "nominal_token_id_bps": 400,
+          "validation_mse": 0.10528812230157286,
+          "test_mse": 0.10528017472913755,
+          "test_delta_mse": 0.09708336057232685,
+          "test_velocity_energy_ratio": 1.53425673761569,
+          "test_6_to_10_hz_energy_ratio": 0.9166858510309125,
+          "test_used_codes": 253,
+          "test_code_perplexity": 243.8419495684892,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0256/window_020ms",
+          "checkpoint_sha256": "6a0101c51473ff1bae6f3f78f8aa1d0be71da496503ecb8bc9788e733c3714c8"
+        },
+        {
+          "window_ms": 20,
+          "codebook_size": 512,
+          "token_rate": 50,
+          "nominal_token_id_bps": 450,
+          "validation_mse": 0.11924670223814916,
+          "test_mse": 0.11931334606919226,
+          "test_delta_mse": 0.10578654048725195,
+          "test_velocity_energy_ratio": 1.5798358652195412,
+          "test_6_to_10_hz_energy_ratio": 0.9277782530503763,
+          "test_used_codes": 168,
+          "test_code_perplexity": 162.59637784383116,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0512/window_020ms",
+          "checkpoint_sha256": "c27864b8731e1b41d666d00f0d8b567443cf836b3355da7baba67bb42de8b8c0"
+        },
+        {
+          "window_ms": 40,
+          "codebook_size": 64,
+          "token_rate": 50,
+          "nominal_token_id_bps": 300,
+          "validation_mse": 0.1362824359593091,
+          "test_mse": 0.13710102400409746,
+          "test_delta_mse": 0.055851207045052545,
+          "test_velocity_energy_ratio": 0.905732972278904,
+          "test_6_to_10_hz_energy_ratio": 0.6518781609898558,
+          "test_used_codes": 63,
+          "test_code_perplexity": 59.9192711569522,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0064/window_040ms",
+          "checkpoint_sha256": "7fc13d67217801440064c83846f4830aa01a6590fbc0daf231581207c6a71f33"
+        },
+        {
+          "window_ms": 40,
+          "codebook_size": 128,
+          "token_rate": 50,
+          "nominal_token_id_bps": 350,
+          "validation_mse": 0.10644735021874983,
+          "test_mse": 0.10679242126725731,
+          "test_delta_mse": 0.047472580906689675,
+          "test_velocity_energy_ratio": 0.9094299816065913,
+          "test_6_to_10_hz_energy_ratio": 0.6636323559182061,
+          "test_used_codes": 128,
+          "test_code_perplexity": 123.87012405400799,
+          "run_dir": "outputs/jsut_window_sweep/window_040ms",
+          "checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09"
+        },
+        {
+          "window_ms": 40,
+          "codebook_size": 256,
+          "token_rate": 50,
+          "nominal_token_id_bps": 400,
+          "validation_mse": 0.11166075529978607,
+          "test_mse": 0.11209354954694933,
+          "test_delta_mse": 0.04771903257797387,
+          "test_velocity_energy_ratio": 0.9016375260374363,
+          "test_6_to_10_hz_energy_ratio": 0.6599569740185788,
+          "test_used_codes": 120,
+          "test_code_perplexity": 114.46811072775144,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0256/window_040ms",
+          "checkpoint_sha256": "ad15ec02a3af9c81f9e11a118eadf2db0d4b6a2e75fd9cb5db812b32f4d0b0c5"
+        },
+        {
+          "window_ms": 40,
+          "codebook_size": 512,
+          "token_rate": 50,
+          "nominal_token_id_bps": 450,
+          "validation_mse": 0.08616512968280976,
+          "test_mse": 0.08620738659380074,
+          "test_delta_mse": 0.040236276909279466,
+          "test_velocity_energy_ratio": 0.9092986937186717,
+          "test_6_to_10_hz_energy_ratio": 0.6786342410539697,
+          "test_used_codes": 276,
+          "test_code_perplexity": 266.58168110357906,
+          "run_dir": "outputs/jsut_codebook_sweep/codebook_0512/window_040ms",
+          "checkpoint_sha256": "01703d385ba979b9a93bd4192633ce6f829f4d1392e51f0d6ee8c9f8eb285a63"
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {},
+        "summary.json": {},
+        "experiment.json": {}
+      },
+      "depends_on": [
+        "window-sweep"
+      ],
+      "reproduction_commands": [
+        "bash scripts/sweep_jsut_codebooks.sh"
+      ]
+    },
+    {
+      "id": "japanese-ppg",
+      "title": "5発話×3音声の日本語PPG",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_40ms128",
+      "entrypoints": [
+        "scripts/extract_jsut_ppg.sh"
+      ],
+      "reproduction_command": "bash scripts/extract_jsut_ppg.sh",
+      "report": "outputs/jsut_ppg_40ms128/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_40ms128/manifest.json",
+          "sha256": "7e4f2620d50feaa6a2f1ca8b04fbe49049ff9ec8e9d782f139e6f5ffe06ab78f"
+        },
+        {
+          "path": "outputs/jsut_ppg_40ms128/summary.csv",
+          "sha256": "0e7823ca6c38f1bdc0aca524fe1c2136a7bf07245e7a430f51cbd43d6eb9232d"
+        },
+        {
+          "path": "outputs/jsut_ppg_40ms128/summary.json",
+          "sha256": "e9c24cd9301de448720e11d7dae5e82b7b376f5f32397baf71966dec33495173"
+        },
+        {
+          "path": "outputs/jsut_ppg_40ms128/verification.json",
+          "sha256": "d3e26cdbd99d0a70d7d861f8204e2874af5e06b00d82d4c92a5fbc58d01e73f7"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "79a69288fb974d714f6dbf995548c8c6d5e25310",
+      "summary_rows": [
+        {
+          "utterance_id": "BASIC5000_0006",
+          "pair": "original__original_ema",
+          "frames": 288,
+          "mean_js_nats": 0.18223817538170164,
+          "median_js_nats": 0.006656352878589265,
+          "p95_js_nats": 0.6928822888566786,
+          "max_js_nats": 0.6931422271598651
+        },
+        {
+          "utterance_id": "BASIC5000_0006",
+          "pair": "original__reconstructed_ema",
+          "frames": 288,
+          "mean_js_nats": 0.1742114177545984,
+          "median_js_nats": 0.005080605406053526,
+          "p95_js_nats": 0.6886587953087406,
+          "max_js_nats": 0.6931264134958335
+        },
+        {
+          "utterance_id": "BASIC5000_0006",
+          "pair": "original_ema__reconstructed_ema",
+          "frames": 288,
+          "mean_js_nats": 0.18251857164191954,
+          "median_js_nats": 0.0015880806995203737,
+          "p95_js_nats": 0.6927699588479008,
+          "max_js_nats": 0.6931468712671666
+        },
+        {
+          "utterance_id": "BASIC5000_0050",
+          "pair": "original__original_ema",
+          "frames": 320,
+          "mean_js_nats": 0.13320105552516623,
+          "median_js_nats": 0.00017742369773149786,
+          "p95_js_nats": 0.6714008204423607,
+          "max_js_nats": 0.6930233215591373
+        },
+        {
+          "utterance_id": "BASIC5000_0050",
+          "pair": "original__reconstructed_ema",
+          "frames": 320,
+          "mean_js_nats": 0.22790669269117875,
+          "median_js_nats": 0.004163754366719263,
+          "p95_js_nats": 0.6929945306132503,
+          "max_js_nats": 0.693146948295023
+        },
+        {
+          "utterance_id": "BASIC5000_0050",
+          "pair": "original_ema__reconstructed_ema",
+          "frames": 320,
+          "mean_js_nats": 0.19930198945654004,
+          "median_js_nats": 0.0009168844796056415,
+          "p95_js_nats": 0.6927373677198516,
+          "max_js_nats": 0.6931472188891097
+        },
+        {
+          "utterance_id": "BASIC5000_0053",
+          "pair": "original__original_ema",
+          "frames": 394,
+          "mean_js_nats": 0.18242478140492144,
+          "median_js_nats": 0.0056746279730646425,
+          "p95_js_nats": 0.6908823086822117,
+          "max_js_nats": 0.6931450090399854
+        },
+        {
+          "utterance_id": "BASIC5000_0053",
+          "pair": "original__reconstructed_ema",
+          "frames": 394,
+          "mean_js_nats": 0.2862349358376881,
+          "median_js_nats": 0.09269152372010936,
+          "p95_js_nats": 0.6931113602419392,
+          "max_js_nats": 0.6931471845127486
+        },
+        {
+          "utterance_id": "BASIC5000_0053",
+          "pair": "original_ema__reconstructed_ema",
+          "frames": 394,
+          "mean_js_nats": 0.1892194286728956,
+          "median_js_nats": 0.0028213529242196245,
+          "p95_js_nats": 0.6929416647075113,
+          "max_js_nats": 0.6931357246740764
+        },
+        {
+          "utterance_id": "BASIC5000_0066",
+          "pair": "original__original_ema",
+          "frames": 428,
+          "mean_js_nats": 0.1145621454825029,
+          "median_js_nats": 7.198604504309813e-05,
+          "p95_js_nats": 0.661124021666201,
+          "max_js_nats": 0.6928537473767469
+        },
+        {
+          "utterance_id": "BASIC5000_0066",
+          "pair": "original__reconstructed_ema",
+          "frames": 428,
+          "mean_js_nats": 0.20526045804754417,
+          "median_js_nats": 0.004424734974120136,
+          "p95_js_nats": 0.6926528989196997,
+          "max_js_nats": 0.6931470875926398
+        },
+        {
+          "utterance_id": "BASIC5000_0066",
+          "pair": "original_ema__reconstructed_ema",
+          "frames": 428,
+          "mean_js_nats": 0.13675059999572328,
+          "median_js_nats": 0.0009985599187099057,
+          "p95_js_nats": 0.6913640823702162,
+          "max_js_nats": 0.6931393712780767
+        },
+        {
+          "utterance_id": "BASIC5000_0082",
+          "pair": "original__original_ema",
+          "frames": 284,
+          "mean_js_nats": 0.16196159799150012,
+          "median_js_nats": 0.0015034788535581893,
+          "p95_js_nats": 0.6896152393310957,
+          "max_js_nats": 0.6931468490439439
+        },
+        {
+          "utterance_id": "BASIC5000_0082",
+          "pair": "original__reconstructed_ema",
+          "frames": 284,
+          "mean_js_nats": 0.1525248634372284,
+          "median_js_nats": 0.002735079425125731,
+          "p95_js_nats": 0.6911110045761089,
+          "max_js_nats": 0.6931471446913924
+        },
+        {
+          "utterance_id": "BASIC5000_0082",
+          "pair": "original_ema__reconstructed_ema",
+          "frames": 284,
+          "mean_js_nats": 0.10418036169716359,
+          "median_js_nats": 0.0002710635508985089,
+          "p95_js_nats": 0.6809653887365593,
+          "max_js_nats": 0.693125562916779
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {},
+        "summary.json": {
+          "records": 15
+        },
+        "manifest.json": {
+          "records": 5
+        }
+      },
+      "provenance": {
+        "ppg_model": {
+          "model_id": "taisa1/ppgs-ja",
+          "model_revision": "c77bee7a8110b12d1d4fc10989b457e185e2a3b3",
+          "source_commit": "d2dac95fd6f40ba0f2708b4a3561c4912e2490d1",
+          "checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+          "phonemes": [
+            "a",
+            "i",
+            "u",
+            "e",
+            "o",
+            "N",
+            "w",
+            "y",
+            "j",
+            "my",
+            "ky",
+            "dy",
+            "gy",
+            "ny",
+            "hy",
+            "ry",
+            "py",
+            "p",
+            "t",
+            "k",
+            "ts",
+            "ch",
+            "b",
+            "d",
+            "g",
+            "z",
+            "m",
+            "n",
+            "s",
+            "sh",
+            "h",
+            "f",
+            "r",
+            "q",
+            "<silent>"
+          ],
+          "frame_rate": 100.0,
+          "sample_rate": 16000,
+          "is_causal": false,
+          "frontend": {
+            "fft_size": 1024,
+            "hop_samples": 160,
+            "mel_channels": 80,
+            "padding": "reflect",
+            "padding_samples": 432,
+            "frame_center_offset_samples": 80,
+            "amplitude_normalization": "none",
+            "rounding": "FP16 magnitude and log-Mel; FP32 Mel matmul and Transformer",
+            "autocast": false,
+            "max_frames": 5000
+          }
+        },
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09"
+      },
+      "depends_on": [
+        "window-sweep"
+      ],
+      "reproduction_commands": [
+        "bash scripts/extract_jsut_ppg.sh"
+      ]
+    },
+    {
+      "id": "local-search-incomplete",
+      "title": "編集前波形の照合で中断した初回探索",
+      "status": "incomplete",
+      "run_dir": "outputs/jsut_ppg_local_search",
+      "entrypoints": [
+        "scripts/local_jsut_ppg_search.sh"
+      ],
+      "reproduction_command": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_local_search/manifest.json",
+          "sha256": "e748c649be7a5ce81edffa1fe31879eb79fedcfebe9cce6f881a6ec986bb9293"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "2b8528788b8c3c9c64a03885e995ede206550347",
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 0
+        }
+      },
+      "provenance": {
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "ppg_checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "settings": {
+          "run_dir": "outputs/jsut_window_sweep/window_040ms",
+          "ppg_dir": "outputs/jsut_ppg_40ms128",
+          "output_dir": "outputs/jsut_ppg_local_search",
+          "utterances": [
+            "BASIC5000_0053",
+            "BASIC5000_0050",
+            "BASIC5000_0066"
+          ],
+          "passes": 2,
+          "positions": 24,
+          "neighbors": 12,
+          "global_candidates": 4,
+          "batch_size": 4,
+          "min_improvement": 1e-05,
+          "device": "cuda",
+          "threads": 4
+        }
+      },
+      "depends_on": [
+        "japanese-ppg"
+      ]
+    },
+    {
+      "id": "local-search",
+      "title": "遷移制約なしの局所探索",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_local_search_v1",
+      "entrypoints": [
+        "scripts/local_jsut_ppg_search.sh"
+      ],
+      "reproduction_command": "bash scripts/local_jsut_ppg_search.sh --output-dir outputs/jsut_ppg_local_search_v1",
+      "report": "outputs/jsut_ppg_local_search_v1/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_local_search_v1/manifest.json",
+          "sha256": "a9adcd0d9487a744766644c54ed521b9de972e39281728d0aacf63dec794a12f"
+        },
+        {
+          "path": "outputs/jsut_ppg_local_search_v1/summary.csv",
+          "sha256": "ef1f3615d61f8b4108979db9f8724925e33ffeb779f9352907c532f356ff8360"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "2b8528788b8c3c9c64a03885e995ede206550347",
+      "summary_rows": [
+        {
+          "utterance_id": "BASIC5000_0053",
+          "text": "ミデアムレアにして、ポテトをひとつ、つけてください。",
+          "directory": "basic5000/BASIC5000_0053",
+          "baseline_js": 0.2862349358376881,
+          "final_js": 0.18108987927747017,
+          "relative_improvement_percent": 36.73383063898298,
+          "baseline_argmax_agreement": 0.5558375634517766,
+          "final_argmax_agreement": 0.7157360406091371,
+          "edited_tokens": 29,
+          "token_count": 197,
+          "accepted_edits": 37,
+          "evaluations": 806,
+          "common_ppg_frames": 394,
+          "baseline_audio_max_absolute_error": 0.0,
+          "saved_wav_mean_js": 0.18108987927747017,
+          "seconds": 3.6802396439015865,
+          "fixed_synthesis_gain": 1.0
+        },
+        {
+          "utterance_id": "BASIC5000_0050",
+          "text": "気に入ろうが入るまいが、君は行かねばならない。",
+          "directory": "basic5000/BASIC5000_0050",
+          "baseline_js": 0.22790669269117875,
+          "final_js": 0.09582475912415492,
+          "relative_improvement_percent": 57.95439002135813,
+          "baseline_argmax_agreement": 0.6375,
+          "final_argmax_agreement": 0.8375,
+          "edited_tokens": 35,
+          "token_count": 160,
+          "accepted_edits": 36,
+          "evaluations": 805,
+          "common_ppg_frames": 320,
+          "baseline_audio_max_absolute_error": 0.0,
+          "saved_wav_mean_js": 0.09582475912415492,
+          "seconds": 2.8569818306714296,
+          "fixed_synthesis_gain": 1.0
+        },
+        {
+          "utterance_id": "BASIC5000_0066",
+          "text": "泥だらけの足で、居間をどたどたあるいてはいけない。",
+          "directory": "basic5000/BASIC5000_0066",
+          "baseline_js": 0.20526045804754417,
+          "final_js": 0.10330951208381929,
+          "relative_improvement_percent": 49.66906287430681,
+          "baseline_argmax_agreement": 0.6542056074766355,
+          "final_argmax_agreement": 0.822429906542056,
+          "edited_tokens": 37,
+          "token_count": 214,
+          "accepted_edits": 40,
+          "evaluations": 811,
+          "common_ppg_frames": 428,
+          "baseline_audio_max_absolute_error": 0.0,
+          "saved_wav_mean_js": 0.10330951208381929,
+          "seconds": 3.618115460500121,
+          "fixed_synthesis_gain": 1.0
+        }
+      ],
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 3
+        }
+      },
+      "provenance": {
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "ppg_checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "settings": {
+          "run_dir": "outputs/jsut_window_sweep/window_040ms",
+          "ppg_dir": "outputs/jsut_ppg_40ms128",
+          "output_dir": "outputs/jsut_ppg_local_search_v1",
+          "utterances": [
+            "BASIC5000_0053",
+            "BASIC5000_0050",
+            "BASIC5000_0066"
+          ],
+          "passes": 2,
+          "positions": 24,
+          "neighbors": 12,
+          "global_candidates": 4,
+          "batch_size": 4,
+          "min_improvement": 1e-05,
+          "device": "cuda",
+          "threads": 4
+        }
+      },
+      "depends_on": [
+        "japanese-ppg"
+      ],
+      "reproduction_commands": [
+        "bash scripts/local_jsut_ppg_search.sh --output-dir outputs/jsut_ppg_local_search_v1"
+      ]
+    },
+    {
+      "id": "soft-transition",
+      "title": "遷移NLLのソフト制約",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_soft_transition",
+      "entrypoints": [
+        "scripts/sweep_ppg_transition.sh"
+      ],
+      "reproduction_command": "bash scripts/sweep_ppg_transition.sh",
+      "report": "outputs/jsut_ppg_soft_transition/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_soft_transition/aggregates.csv",
+          "sha256": "f0d6c2f6d2063025e95b6f51d9364557c91ceee6ffc53a18d934746a093e6194"
+        },
+        {
+          "path": "outputs/jsut_ppg_soft_transition/manifest.json",
+          "sha256": "d07ec09b3df2641cb57ce99b7c7229aa77e622200fe972a72030859bc7165567"
+        },
+        {
+          "path": "outputs/jsut_ppg_soft_transition/summary.csv",
+          "sha256": "f48f3e6b89b8eb9a19131500ef8aebe029d300fcef560cc22305a20b9af39f81"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "2b8528788b8c3c9c64a03885e995ede206550347",
+      "summary_rows": [
+        {
+          "transition_weight": 0.0,
+          "utterances": 3,
+          "baseline_js": 0.2395430669225702,
+          "baseline_transition_nll": 2.245805596978306,
+          "baseline_unseen_transition_fraction": 0.0,
+          "baseline_self_transition_fraction": 0.36619718309859156,
+          "final_js": 0.1280471160480976,
+          "final_transition_nll": 3.2246478681665285,
+          "final_unseen_transition_fraction": 0.1073943661971831,
+          "final_self_transition_fraction": 0.2852112676056338,
+          "edited_tokens": 101,
+          "token_count": 571
+        },
+        {
+          "transition_weight": 0.01,
+          "utterances": 3,
+          "baseline_js": 0.2395430669225702,
+          "baseline_transition_nll": 2.245805596978306,
+          "baseline_unseen_transition_fraction": 0.0,
+          "baseline_self_transition_fraction": 0.36619718309859156,
+          "final_js": 0.13205983643114338,
+          "final_transition_nll": 3.0003064116488227,
+          "final_unseen_transition_fraction": 0.07394366197183098,
+          "final_self_transition_fraction": 0.3045774647887324,
+          "edited_tokens": 91,
+          "token_count": 571
+        },
+        {
+          "transition_weight": 0.03,
+          "utterances": 3,
+          "baseline_js": 0.2395430669225702,
+          "baseline_transition_nll": 2.245805596978306,
+          "baseline_unseen_transition_fraction": 0.0,
+          "baseline_self_transition_fraction": 0.36619718309859156,
+          "final_js": 0.13316320456938247,
+          "final_transition_nll": 2.87720037778544,
+          "final_unseen_transition_fraction": 0.056338028169014086,
+          "final_self_transition_fraction": 0.30985915492957744,
+          "edited_tokens": 85,
+          "token_count": 571
+        },
+        {
+          "transition_weight": 0.1,
+          "utterances": 3,
+          "baseline_js": 0.2395430669225702,
+          "baseline_transition_nll": 2.245805596978306,
+          "baseline_unseen_transition_fraction": 0.0,
+          "baseline_self_transition_fraction": 0.36619718309859156,
+          "final_js": 0.15217676978126457,
+          "final_transition_nll": 2.4349586259757197,
+          "final_unseen_transition_fraction": 0.01584507042253521,
+          "final_self_transition_fraction": 0.3415492957746479,
+          "edited_tokens": 64,
+          "token_count": 571
+        }
+      ],
+      "artifact_structure": {
+        "manifest.json": {
+          "runs": 4,
+          "aggregates": 4
+        }
+      },
+      "depends_on": [
+        "japanese-ppg"
+      ],
+      "reproduction_commands": [
+        "bash scripts/sweep_ppg_transition.sh"
+      ]
+    },
+    {
+      "id": "sequential-feedback",
+      "title": "100 ms確定・固定遅延PPG",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_sequential",
+      "entrypoints": [
+        "scripts/compare_sequential_ppg.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_sequential_ppg.sh",
+      "report": "outputs/jsut_ppg_sequential/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_sequential/aggregates.csv",
+          "sha256": "fa7a1e962b72654c6ca0c3905f7d31a04f3f3a140d4b4a2797ef64bb02873cf5"
+        },
+        {
+          "path": "outputs/jsut_ppg_sequential/manifest.json",
+          "sha256": "768b3a1fe2a2e9c44b6e8f8bc6b215d8ea7fff196c74cc3924a483cf30516954"
+        },
+        {
+          "path": "outputs/jsut_ppg_sequential/summary.csv",
+          "sha256": "934ba1ad715c2058efdac41ee336c7bdb04060581dffe8ffc46727a63dbb6a53"
+        },
+        {
+          "path": "outputs/jsut_ppg_sequential/verification.json",
+          "sha256": "66159599cdebc9a800c5ded3beb557ea6c82394d5f097e00c382ba8f2fe70cae"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "247214e5acdee160bf80d3a13824b077deb0beaa",
+      "summary_rows": [
+        {
+          "condition": "horizon_200ms_unedited",
+          "horizon_ms": 200,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 115,
+          "seconds": 1.635628329589963,
+          "mean_js": 0.2354439890601757,
+          "fixed_lag_js": 0.2351173753924153,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.006087984411611355
+        },
+        {
+          "condition": "horizon_200ms_no_feedback",
+          "horizon_ms": 200,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 308,
+          "evaluations": 18528,
+          "seconds": 49.088164661079645,
+          "mean_js": 0.1372767749947125,
+          "fixed_lag_js": 0.11423091344716423,
+          "transition_nll": 3.4548748975542978,
+          "unseen_transition_fraction": 0.11267605633802817,
+          "boundary_mean_abs_jump": 0.006983893125184945
+        },
+        {
+          "condition": "horizon_200ms_feedback",
+          "horizon_ms": 200,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 325,
+          "evaluations": 18639,
+          "seconds": 49.59207818284631,
+          "mean_js": 0.12862860888775163,
+          "fixed_lag_js": 0.10109239899167326,
+          "transition_nll": 3.615854926983509,
+          "unseen_transition_fraction": 0.13380281690140844,
+          "boundary_mean_abs_jump": 0.006019047253565597
+        },
+        {
+          "condition": "horizon_400ms_unedited",
+          "horizon_ms": 400,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 115,
+          "seconds": 0.8888830598443747,
+          "mean_js": 0.23954129640313376,
+          "fixed_lag_js": 0.2374271170554762,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.006180627200852281
+        },
+        {
+          "condition": "horizon_400ms_no_feedback",
+          "horizon_ms": 400,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 295,
+          "evaluations": 18645,
+          "seconds": 52.91869224794209,
+          "mean_js": 0.11304335738270521,
+          "fixed_lag_js": 0.10495105690959845,
+          "transition_nll": 3.7424582461721854,
+          "unseen_transition_fraction": 0.14964788732394366,
+          "boundary_mean_abs_jump": 0.006324223205280889
+        },
+        {
+          "condition": "horizon_400ms_feedback",
+          "horizon_ms": 400,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 294,
+          "evaluations": 18544,
+          "seconds": 51.987483406439424,
+          "mean_js": 0.11135002993538475,
+          "fixed_lag_js": 0.10022765987636989,
+          "transition_nll": 3.6715117319970543,
+          "unseen_transition_fraction": 0.13380281690140844,
+          "boundary_mean_abs_jump": 0.006234850297914818
+        },
+        {
+          "condition": "horizon_800ms_unedited",
+          "horizon_ms": 800,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 115,
+          "seconds": 0.9236348196864128,
+          "mean_js": 0.23955101207816085,
+          "fixed_lag_js": 0.23756332469596358,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.006180354614376223
+        },
+        {
+          "condition": "horizon_800ms_no_feedback",
+          "horizon_ms": 800,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 250,
+          "evaluations": 18024,
+          "seconds": 53.57147476449609,
+          "mean_js": 0.11303811586309784,
+          "fixed_lag_js": 0.11711110535442219,
+          "transition_nll": 3.486698304563713,
+          "unseen_transition_fraction": 0.12147887323943662,
+          "boundary_mean_abs_jump": 0.006419045597015481
+        },
+        {
+          "condition": "horizon_800ms_feedback",
+          "horizon_ms": 800,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 252,
+          "evaluations": 18123,
+          "seconds": 54.43617186509073,
+          "mean_js": 0.1022015653868882,
+          "fixed_lag_js": 0.10830648946068505,
+          "transition_nll": 3.6515222263708806,
+          "unseen_transition_fraction": 0.13556338028169015,
+          "boundary_mean_abs_jump": 0.005622046367664423
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {
+          "runs": 27
+        },
+        "manifest.json": {
+          "records": 27,
+          "aggregates": 9
+        }
+      },
+      "provenance": {
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "ppg_checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "settings": {
+          "commit_ms": 100,
+          "observation_lag_ms": 100,
+          "crossfade_ms": 10,
+          "transition_weight": 0.03,
+          "transition_alpha": 1,
+          "positions_per_pass_per_step": 5,
+          "passes_per_step": 2,
+          "neighbors": 12,
+          "global_candidates": 4,
+          "feedback_update_rate": 0.25,
+          "feedback_log_bias_clip": 1.0,
+          "feedback_gain": 0.5,
+          "feedback_definition": "delayed observed vs pre-emission forecast phone-mass log-ratio calibration",
+          "objective": "mean JS over editable horizon + .03 * mean transition NLL over horizon including incoming edge",
+          "target_available_offline": true,
+          "initial_features_available_offline": true,
+          "plant": "same deterministic SPARC synthesizer as predictor, immutable chunk emission",
+          "future_audio_beyond_horizon_used": false,
+          "offline_search_budget_differs": true
+        }
+      },
+      "depends_on": [
+        "soft-transition"
+      ],
+      "reproduction_commands": [
+        "bash scripts/compare_sequential_ppg.sh"
+      ]
+    },
+    {
+      "id": "strict-delay60",
+      "title": "20 ms確定・観測波形t−60 ms",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_delay060_step020",
+      "entrypoints": [
+        "scripts/compare_delayed_ppg.sh"
+      ],
+      "reproduction_command": "bash scripts/compare_delayed_ppg.sh",
+      "report": "outputs/jsut_ppg_delay060_step020/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/aggregates.csv",
+          "sha256": "5a9d3aa9c004b5862e15bab9bdeaf1f1295e07d2556999b9833724bb97fc5892"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/manifest.json",
+          "sha256": "f662488e3eabd026ce8fac5d2715775a255f8299ecc170a7438545349f47d7df"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/summary.csv",
+          "sha256": "8f107ada2103789667db1bb045c75ed260371cb325c5264b6f3beac3eb3e8da8"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/verification.json",
+          "sha256": "2aeb694c85f5a120c5f04bdc88cbd80a79556bf0d327141280b34d29918213d5"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "247214e5acdee160bf80d3a13824b077deb0beaa",
+      "summary_rows": [
+        {
+          "condition": "horizon_200ms_unedited",
+          "horizon_ms": 200,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 571,
+          "seconds": 10.360196985304356,
+          "mean_js": 0.23998133872288788,
+          "fixed_lag_js": 0.37775210343116183,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.0068815528344638435
+        },
+        {
+          "condition": "horizon_200ms_no_feedback",
+          "horizon_ms": 200,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 441,
+          "evaluations": 19610,
+          "seconds": 69.28560416027904,
+          "mean_js": 0.14896531037616328,
+          "fixed_lag_js": 0.36584903499334087,
+          "transition_nll": 4.475665331645761,
+          "unseen_transition_fraction": 0.24119718309859156,
+          "boundary_mean_abs_jump": 0.00674529806596004
+        },
+        {
+          "condition": "horizon_200ms_feedback",
+          "horizon_ms": 200,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 440,
+          "evaluations": 19605,
+          "seconds": 68.10036247968674,
+          "mean_js": 0.1417938856509497,
+          "fixed_lag_js": 0.36224087941954536,
+          "transition_nll": 4.259606673049343,
+          "unseen_transition_fraction": 0.20950704225352113,
+          "boundary_mean_abs_jump": 0.006767810049342175
+        },
+        {
+          "condition": "horizon_400ms_unedited",
+          "horizon_ms": 400,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 571,
+          "seconds": 6.008506631478667,
+          "mean_js": 0.2395254101122834,
+          "fixed_lag_js": 0.3778100554608423,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.0069108882371309984
+        },
+        {
+          "condition": "horizon_400ms_no_feedback",
+          "horizon_ms": 400,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 348,
+          "evaluations": 19503,
+          "seconds": 68.9040552880615,
+          "mean_js": 0.12778120316536717,
+          "fixed_lag_js": 0.3846894428969515,
+          "transition_nll": 3.8415031631355396,
+          "unseen_transition_fraction": 0.176056338028169,
+          "boundary_mean_abs_jump": 0.006970042807154987
+        },
+        {
+          "condition": "horizon_400ms_feedback",
+          "horizon_ms": 400,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 365,
+          "evaluations": 19476,
+          "seconds": 68.26845969446003,
+          "mean_js": 0.14953249958679954,
+          "fixed_lag_js": 0.3833251377574192,
+          "transition_nll": 3.8469842950528954,
+          "unseen_transition_fraction": 0.16901408450704225,
+          "boundary_mean_abs_jump": 0.006924212854486746
+        },
+        {
+          "condition": "horizon_800ms_unedited",
+          "horizon_ms": 800,
+          "mode": "unedited",
+          "utterances": 3,
+          "edited_tokens": 0,
+          "evaluations": 571,
+          "seconds": 5.647209549322724,
+          "mean_js": 0.23949968845057393,
+          "fixed_lag_js": 0.3778989624514479,
+          "transition_nll": 2.245805596978306,
+          "unseen_transition_fraction": 0.0,
+          "boundary_mean_abs_jump": 0.006913521032760733
+        },
+        {
+          "condition": "horizon_800ms_no_feedback",
+          "horizon_ms": 800,
+          "mode": "no_feedback",
+          "utterances": 3,
+          "edited_tokens": 342,
+          "evaluations": 19412,
+          "seconds": 69.64616617560387,
+          "mean_js": 0.11974200134448913,
+          "fixed_lag_js": 0.3639818388735171,
+          "transition_nll": 3.904810765928383,
+          "unseen_transition_fraction": 0.1637323943661972,
+          "boundary_mean_abs_jump": 0.006487456693077906
+        },
+        {
+          "condition": "horizon_800ms_feedback",
+          "horizon_ms": 800,
+          "mode": "feedback",
+          "utterances": 3,
+          "edited_tokens": 338,
+          "evaluations": 19421,
+          "seconds": 70.04629692621529,
+          "mean_js": 0.12387433035896583,
+          "fixed_lag_js": 0.3616774470921686,
+          "transition_nll": 3.8457692553705716,
+          "unseen_transition_fraction": 0.1637323943661972,
+          "boundary_mean_abs_jump": 0.006178412635640149
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {
+          "runs": 27
+        },
+        "manifest.json": {
+          "records": 27,
+          "aggregates": 9
+        }
+      },
+      "provenance": {
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "ppg_checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "settings": {
+          "commit_ms": 20,
+          "acoustic_information_delay_ms": 60,
+          "observer_input_is_truncated": true,
+          "blind_context_source": "issued model prediction, not actual waveform",
+          "positions_per_step": 2,
+          "passes_per_step": 1,
+          "force_current_position": true,
+          "transition_weight": 0.03,
+          "feedback_gain": 0.5,
+          "feedback_log_bias_clip": 1,
+          "feedback_update_rate_per_100ms": 0.25,
+          "crossfade_ms": 10
+        }
+      },
+      "depends_on": [
+        "soft-transition"
+      ],
+      "reproduction_commands": [
+        "bash scripts/compare_delayed_ppg.sh"
+      ]
+    },
+    {
+      "id": "generated-audio-metrics",
+      "title": "同一発話制御のWhisper large-v3・音響評価",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_delay060_step020/audio_metrics",
+      "entrypoints": [
+        "scripts/evaluate_generated_audio.sh"
+      ],
+      "reproduction_command": "bash scripts/evaluate_generated_audio.sh",
+      "report": "outputs/jsut_ppg_delay060_step020/audio_metrics/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/audio_metrics/aggregates.csv",
+          "sha256": "f5d04ae68c99e8370f970136dd24f52d0dd9234f8a6cee5d82e924f1592a9385"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/audio_metrics/asr_cache.json",
+          "sha256": "854b5a9237db971861d67e4692d59bf490ac9d4d241a28852cfa945d56797ac0"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/audio_metrics/manifest.json",
+          "sha256": "4b3622bd800226e6a1f70f322cf186333699462ac3acb79810a75b1a50597a93"
+        },
+        {
+          "path": "outputs/jsut_ppg_delay060_step020/audio_metrics/summary.csv",
+          "sha256": "2749103cd5aa1427aa4b72736fa4e9835f8df25552a89b44236b2c0c13cf71b6"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "66d0fd7d096cad08d5c36c63adce27099dc3fa3c",
+      "summary_rows": [
+        {
+          "condition": "original",
+          "utterances": 3,
+          "cer": 0.11940298507462686,
+          "character_errors": 8,
+          "reference_characters": 67,
+          "mcd_db": 0.0,
+          "stoi": 0.9999999999999991,
+          "f0_rmse_hz": 0.0,
+          "f0_rmse_cents": 0.0,
+          "vuv_error_rate": 0.0
+        },
+        {
+          "condition": "original_ema",
+          "utterances": 3,
+          "cer": 0.19402985074626866,
+          "character_errors": 13,
+          "reference_characters": 67,
+          "mcd_db": 6.776784059630956,
+          "stoi": 0.8421084208101298,
+          "f0_rmse_hz": 9.945117138962166,
+          "f0_rmse_cents": 80.62136128769625,
+          "vuv_error_rate": 0.07074235807860262
+        },
+        {
+          "condition": "before",
+          "utterances": 3,
+          "cer": 0.5074626865671642,
+          "character_errors": 34,
+          "reference_characters": 67,
+          "mcd_db": 7.506808929275103,
+          "stoi": 0.787334591945062,
+          "f0_rmse_hz": 9.5478600985636,
+          "f0_rmse_cents": 75.22478800329996,
+          "vuv_error_rate": 0.09082969432314411
+        },
+        {
+          "condition": "offline",
+          "utterances": 3,
+          "cer": 0.5074626865671642,
+          "character_errors": 34,
+          "reference_characters": 67,
+          "mcd_db": 7.429051233390931,
+          "stoi": 0.7942842614788878,
+          "f0_rmse_hz": 10.060519640784264,
+          "f0_rmse_cents": 77.7151320135908,
+          "vuv_error_rate": 0.08820960698689956
+        },
+        {
+          "condition": "horizon_200ms_unedited",
+          "utterances": 3,
+          "cer": 0.5373134328358209,
+          "character_errors": 36,
+          "reference_characters": 67,
+          "mcd_db": 7.50130777677904,
+          "stoi": 0.7875001952382568,
+          "f0_rmse_hz": 9.593040766102263,
+          "f0_rmse_cents": 75.9469860414322,
+          "vuv_error_rate": 0.08558951965065502
+        },
+        {
+          "condition": "horizon_200ms_no_feedback",
+          "utterances": 3,
+          "cer": 4.373134328358209,
+          "character_errors": 293,
+          "reference_characters": 67,
+          "mcd_db": 7.887447938838558,
+          "stoi": 0.7502221675592317,
+          "f0_rmse_hz": 10.670641306758085,
+          "f0_rmse_cents": 85.42991932142732,
+          "vuv_error_rate": 0.0925764192139738
+        },
+        {
+          "condition": "horizon_200ms_feedback",
+          "utterances": 3,
+          "cer": 0.835820895522388,
+          "character_errors": 56,
+          "reference_characters": 67,
+          "mcd_db": 7.790426172707653,
+          "stoi": 0.7432459993544024,
+          "f0_rmse_hz": 12.546833727376757,
+          "f0_rmse_cents": 102.35801587975924,
+          "vuv_error_rate": 0.08034934497816594
+        },
+        {
+          "condition": "horizon_400ms_unedited",
+          "utterances": 3,
+          "cer": 0.5074626865671642,
+          "character_errors": 34,
+          "reference_characters": 67,
+          "mcd_db": 7.506898200427749,
+          "stoi": 0.7873534019955332,
+          "f0_rmse_hz": 9.54865285760443,
+          "f0_rmse_cents": 75.22485713758995,
+          "vuv_error_rate": 0.09082969432314411
+        },
+        {
+          "condition": "horizon_400ms_no_feedback",
+          "utterances": 3,
+          "cer": 0.8059701492537313,
+          "character_errors": 54,
+          "reference_characters": 67,
+          "mcd_db": 7.832314406427584,
+          "stoi": 0.738745690270775,
+          "f0_rmse_hz": 10.29656674605808,
+          "f0_rmse_cents": 84.76977395141698,
+          "vuv_error_rate": 0.07598253275109171
+        },
+        {
+          "condition": "horizon_400ms_feedback",
+          "utterances": 3,
+          "cer": 0.9253731343283582,
+          "character_errors": 62,
+          "reference_characters": 67,
+          "mcd_db": 7.712958558628116,
+          "stoi": 0.7466475822268145,
+          "f0_rmse_hz": 9.00220341405043,
+          "f0_rmse_cents": 81.38831308643556,
+          "vuv_error_rate": 0.09082969432314411
+        },
+        {
+          "condition": "horizon_800ms_unedited",
+          "utterances": 3,
+          "cer": 0.5074626865671642,
+          "character_errors": 34,
+          "reference_characters": 67,
+          "mcd_db": 7.506343358419822,
+          "stoi": 0.7873552583433042,
+          "f0_rmse_hz": 9.549945811938441,
+          "f0_rmse_cents": 75.23851965063153,
+          "vuv_error_rate": 0.09082969432314411
+        },
+        {
+          "condition": "horizon_800ms_no_feedback",
+          "utterances": 3,
+          "cer": 0.7611940298507462,
+          "character_errors": 51,
+          "reference_characters": 67,
+          "mcd_db": 7.627588918479304,
+          "stoi": 0.7563201964038386,
+          "f0_rmse_hz": 10.041541606089663,
+          "f0_rmse_cents": 81.84706231407286,
+          "vuv_error_rate": 0.11179039301310043
+        },
+        {
+          "condition": "horizon_800ms_feedback",
+          "utterances": 3,
+          "cer": 0.9850746268656716,
+          "character_errors": 66,
+          "reference_characters": 67,
+          "mcd_db": 7.568873213762188,
+          "stoi": 0.7649873615411679,
+          "f0_rmse_hz": 8.026416314525253,
+          "f0_rmse_cents": 73.69397418342167,
+          "vuv_error_rate": 0.0925764192139738
+        }
+      ],
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 39
+        }
+      },
+      "provenance": {
+        "asr_model_id": "openai/whisper-large-v3",
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1"
+      },
+      "depends_on": [
+        "strict-delay60"
+      ],
+      "reproduction_commands": [
+        "bash scripts/evaluate_generated_audio.sh"
+      ]
+    },
+    {
+      "id": "cross-utterance",
+      "title": "A軌道からBのPPGへの制御",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_A_to_B",
+      "entrypoints": [
+        "scripts/cross_utterance_ppg.sh"
+      ],
+      "reproduction_command": "bash scripts/cross_utterance_ppg.sh",
+      "report": "outputs/jsut_ppg_A_to_B/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_A_to_B/aggregates.csv",
+          "sha256": "d3d1f401eb3202fac7c134ecf1d9778e6fbd4a1f9968aee0f91f8427bb83ae2c"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/manifest.json",
+          "sha256": "9dd7847cf69ed954f620c5260e365f29c18d47ac8bb8d62f25b154b9956fe74a"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/summary.csv",
+          "sha256": "4d44cba8fbe4c2b9ca137c8f598ab8ac0d99209133f0d51928127875c537b577"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/verification.json",
+          "sha256": "0f24b8671a47ce139a193b02aeb98bd40a9005da2773182dcf904176344aa00d"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "d700a5859aa87683254b4fd8daa3a82b65486a71",
+      "summary_rows": [
+        {
+          "condition": "target_original",
+          "pairs": 3,
+          "evaluations": 0,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.0,
+          "ppg_js_to_source_initial": 0.5342606722213534,
+          "transition_nll": null
+        },
+        {
+          "condition": "source_initial",
+          "pairs": 3,
+          "evaluations": 0,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.5342606722213534,
+          "ppg_js_to_source_initial": 0.0,
+          "transition_nll": 2.232259559005805
+        },
+        {
+          "condition": "target_tokens_oracle",
+          "pairs": 3,
+          "evaluations": 0,
+          "edited_tokens": 564,
+          "token_count": 571,
+          "ppg_js_to_B": 0.3937781820876046,
+          "ppg_js_to_source_initial": 0.4624229002581519,
+          "transition_nll": 2.2458055969783057
+        },
+        {
+          "condition": "target_ema_oracle",
+          "pairs": 3,
+          "evaluations": 0,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.360428159414575,
+          "ppg_js_to_source_initial": 0.4705896773694869,
+          "transition_nll": null
+        },
+        {
+          "condition": "horizon_200ms_unedited",
+          "pairs": 3,
+          "evaluations": 571,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.5342664344469135,
+          "ppg_js_to_source_initial": 0.00018648826783255424,
+          "transition_nll": 2.232259559005805
+        },
+        {
+          "condition": "horizon_200ms_no_feedback",
+          "pairs": 3,
+          "evaluations": 19540,
+          "edited_tokens": 431,
+          "token_count": 571,
+          "ppg_js_to_B": 0.40668021326177517,
+          "ppg_js_to_source_initial": 0.34059515934836704,
+          "transition_nll": 4.198664209152902
+        },
+        {
+          "condition": "horizon_200ms_feedback",
+          "pairs": 3,
+          "evaluations": 19548,
+          "edited_tokens": 419,
+          "token_count": 571,
+          "ppg_js_to_B": 0.40304968306963884,
+          "ppg_js_to_source_initial": 0.36862226804959036,
+          "transition_nll": 4.057965437613558
+        },
+        {
+          "condition": "horizon_400ms_unedited",
+          "pairs": 3,
+          "evaluations": 571,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.5342805900993872,
+          "ppg_js_to_source_initial": 1.3194746070022806e-05,
+          "transition_nll": 2.232259559005805
+        },
+        {
+          "condition": "horizon_400ms_no_feedback",
+          "pairs": 3,
+          "evaluations": 19482,
+          "edited_tokens": 390,
+          "token_count": 571,
+          "ppg_js_to_B": 0.44772345293809224,
+          "ppg_js_to_source_initial": 0.33004261694799464,
+          "transition_nll": 3.827867734607902
+        },
+        {
+          "condition": "horizon_400ms_feedback",
+          "pairs": 3,
+          "evaluations": 19447,
+          "edited_tokens": 377,
+          "token_count": 571,
+          "ppg_js_to_B": 0.42851610892884945,
+          "ppg_js_to_source_initial": 0.3406751917178429,
+          "transition_nll": 3.8804514470755134
+        },
+        {
+          "condition": "horizon_800ms_unedited",
+          "pairs": 3,
+          "evaluations": 571,
+          "edited_tokens": 0,
+          "token_count": 571,
+          "ppg_js_to_B": 0.5342643057415082,
+          "ppg_js_to_source_initial": 1.2733229783147482e-05,
+          "transition_nll": 2.232259559005805
+        },
+        {
+          "condition": "horizon_800ms_no_feedback",
+          "pairs": 3,
+          "evaluations": 19320,
+          "edited_tokens": 327,
+          "token_count": 571,
+          "ppg_js_to_B": 0.419313550547955,
+          "ppg_js_to_source_initial": 0.3011833884025981,
+          "transition_nll": 3.5515585073815457
+        },
+        {
+          "condition": "horizon_800ms_feedback",
+          "pairs": 3,
+          "evaluations": 19329,
+          "edited_tokens": 322,
+          "token_count": 571,
+          "ppg_js_to_B": 0.4231386196693987,
+          "ppg_js_to_source_initial": 0.3268932462511175,
+          "transition_nll": 3.6704834740710885
+        }
+      ],
+      "artifact_structure": {
+        "verification.json": {
+          "runs": 27
+        },
+        "manifest.json": {
+          "records": 39,
+          "aggregates": 13
+        }
+      },
+      "provenance": {
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+        "vq_checkpoint_sha256": "c382e8c990bf5aba2ff96a8d264335855e5d27a755e6aed2e55d4f1cd8ac3b09",
+        "ppg_checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "settings": {
+          "commit_ms": 20,
+          "observation_delay_ms": 60,
+          "transition_weight": 0.03,
+          "retiming": "source continuous EMA, pitch and loudness -> target frame count; no target PPG warp",
+          "fixed_from_source": [
+            "pitch",
+            "loudness",
+            "speaker_embedding"
+          ],
+          "oracle_target_tokens_used_for_search": false,
+          "oracle_target_ema_used_for_search": false,
+          "feedback_definition": "predicted vs observed phone-mass calibration; target B guides both search modes"
+        }
+      },
+      "depends_on": [
+        "window-sweep",
+        "japanese-ppg"
+      ],
+      "reproduction_commands": [
+        "bash scripts/cross_utterance_ppg.sh"
+      ]
+    },
+    {
+      "id": "cross-utterance-metrics",
+      "title": "A→BのCER(A/B)と音響評価",
+      "status": "complete",
+      "run_dir": "outputs/jsut_ppg_A_to_B/audio_metrics",
+      "entrypoints": [
+        "scripts/evaluate_cross_utterance.sh"
+      ],
+      "reproduction_command": "bash scripts/evaluate_cross_utterance.sh",
+      "report": "outputs/jsut_ppg_A_to_B/audio_metrics/index.html",
+      "evidence": [
+        {
+          "path": "outputs/jsut_ppg_A_to_B/audio_metrics/aggregates.csv",
+          "sha256": "c66c67ceebb8b19963e065a47a8293d097ee0e6ea6f93b1f284fac0f50ba8a6a"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/audio_metrics/asr_cache.json",
+          "sha256": "09082208f0d0919ffe56fb2051f7e28d94bf9af8b5c0659163e9e1b4136a9c84"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/audio_metrics/manifest.json",
+          "sha256": "4aa25bc4ecbc6bcdb23728cfdca2aac2860f7f316e289c2e6418504b1f61edc4"
+        },
+        {
+          "path": "outputs/jsut_ppg_A_to_B/audio_metrics/summary.csv",
+          "sha256": "3b6380f3bda9a851dfb52e06a0e312274443bab7ff332ba41c7eed489c5ecb22"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "d700a5859aa87683254b4fd8daa3a82b65486a71",
+      "summary_rows": [
+        {
+          "condition": "target_original",
+          "utterances": 3,
+          "character_errors": 8,
+          "reference_characters": 67,
+          "mcd_db": 0.0,
+          "stoi": 0.9999999999999991,
+          "f0_rmse_hz": 0.0,
+          "f0_rmse_cents": 0.0,
+          "vuv_error_rate": 0.0,
+          "cer_B": 0.11940298507462686,
+          "cer_A": 0.9402985074626866,
+          "ppg_js_to_B": 0.0
+        },
+        {
+          "condition": "source_initial",
+          "utterances": 3,
+          "character_errors": 64,
+          "reference_characters": 67,
+          "mcd_db": 11.517458670200513,
+          "stoi": 0.2365307727772258,
+          "f0_rmse_hz": 55.11665121730053,
+          "f0_rmse_cents": 422.0144175955006,
+          "vuv_error_rate": 0.4200873362445415,
+          "cer_B": 0.9552238805970149,
+          "cer_A": 0.44776119402985076,
+          "ppg_js_to_B": 0.5342606722213534
+        },
+        {
+          "condition": "target_tokens_oracle",
+          "utterances": 3,
+          "character_errors": 555,
+          "reference_characters": 67,
+          "mcd_db": 9.205803269535513,
+          "stoi": 0.3978635884927744,
+          "f0_rmse_hz": 54.268963474061145,
+          "f0_rmse_cents": 418.9999288644082,
+          "vuv_error_rate": 0.4104803493449782,
+          "cer_B": 8.283582089552239,
+          "cer_A": 8.35820895522388,
+          "ppg_js_to_B": 0.3937781820876046
+        },
+        {
+          "condition": "target_ema_oracle",
+          "utterances": 3,
+          "character_errors": 69,
+          "reference_characters": 67,
+          "mcd_db": 8.718497540278547,
+          "stoi": 0.44951431811585385,
+          "f0_rmse_hz": 53.804484149124725,
+          "f0_rmse_cents": 415.8154764266147,
+          "vuv_error_rate": 0.4096069868995633,
+          "cer_B": 1.0298507462686568,
+          "cer_A": 1.0746268656716418,
+          "ppg_js_to_B": 0.360428159414575
+        },
+        {
+          "condition": "horizon_200ms_unedited",
+          "utterances": 3,
+          "character_errors": 64,
+          "reference_characters": 67,
+          "mcd_db": 11.524469824207866,
+          "stoi": 0.23621236108889418,
+          "f0_rmse_hz": 55.13751873021128,
+          "f0_rmse_cents": 422.17284941682277,
+          "vuv_error_rate": 0.4192139737991266,
+          "cer_B": 0.9552238805970149,
+          "cer_A": 0.44776119402985076,
+          "ppg_js_to_B": 0.5342664344469135
+        },
+        {
+          "condition": "horizon_200ms_no_feedback",
+          "utterances": 3,
+          "character_errors": 70,
+          "reference_characters": 67,
+          "mcd_db": 10.781294138249232,
+          "stoi": 0.29660139344237363,
+          "f0_rmse_hz": 56.523534730256394,
+          "f0_rmse_cents": 433.4858421782358,
+          "vuv_error_rate": 0.422707423580786,
+          "cer_B": 1.044776119402985,
+          "cer_A": 1.044776119402985,
+          "ppg_js_to_B": 0.40668021326177517
+        },
+        {
+          "condition": "horizon_200ms_feedback",
+          "utterances": 3,
+          "character_errors": 87,
+          "reference_characters": 67,
+          "mcd_db": 10.529672909781056,
+          "stoi": 0.29259684346128945,
+          "f0_rmse_hz": 55.175290673473754,
+          "f0_rmse_cents": 419.98948247738457,
+          "vuv_error_rate": 0.4192139737991266,
+          "cer_B": 1.2985074626865671,
+          "cer_A": 1.2686567164179106,
+          "ppg_js_to_B": 0.40304968306963884
+        },
+        {
+          "condition": "horizon_400ms_unedited",
+          "utterances": 3,
+          "character_errors": 64,
+          "reference_characters": 67,
+          "mcd_db": 11.515138328847948,
+          "stoi": 0.23655149772100872,
+          "f0_rmse_hz": 55.12655272437948,
+          "f0_rmse_cents": 422.0925930656425,
+          "vuv_error_rate": 0.4200873362445415,
+          "cer_B": 0.9552238805970149,
+          "cer_A": 0.44776119402985076,
+          "ppg_js_to_B": 0.5342805900993872
+        },
+        {
+          "condition": "horizon_400ms_no_feedback",
+          "utterances": 3,
+          "character_errors": 199,
+          "reference_characters": 67,
+          "mcd_db": 11.131853342512516,
+          "stoi": 0.28137536487133324,
+          "f0_rmse_hz": 56.985594030621925,
+          "f0_rmse_cents": 449.8569816364123,
+          "vuv_error_rate": 0.4410480349344978,
+          "cer_B": 2.970149253731343,
+          "cer_A": 2.8507462686567164,
+          "ppg_js_to_B": 0.44772345293809224
+        },
+        {
+          "condition": "horizon_400ms_feedback",
+          "utterances": 3,
+          "character_errors": 94,
+          "reference_characters": 67,
+          "mcd_db": 11.022578482164656,
+          "stoi": 0.2994395531571994,
+          "f0_rmse_hz": 56.30457353335884,
+          "f0_rmse_cents": 439.73076849979583,
+          "vuv_error_rate": 0.4192139737991266,
+          "cer_B": 1.4029850746268657,
+          "cer_A": 1.4029850746268657,
+          "ppg_js_to_B": 0.42851610892884945
+        },
+        {
+          "condition": "horizon_800ms_unedited",
+          "utterances": 3,
+          "character_errors": 64,
+          "reference_characters": 67,
+          "mcd_db": 11.514291992714723,
+          "stoi": 0.2366277615907555,
+          "f0_rmse_hz": 55.12679687219856,
+          "f0_rmse_cents": 422.0882092256511,
+          "vuv_error_rate": 0.4200873362445415,
+          "cer_B": 0.9552238805970149,
+          "cer_A": 0.44776119402985076,
+          "ppg_js_to_B": 0.5342643057415082
+        },
+        {
+          "condition": "horizon_800ms_no_feedback",
+          "utterances": 3,
+          "character_errors": 87,
+          "reference_characters": 67,
+          "mcd_db": 10.967303808165457,
+          "stoi": 0.2708306529756483,
+          "f0_rmse_hz": 55.30261589572586,
+          "f0_rmse_cents": 439.2543208824283,
+          "vuv_error_rate": 0.44366812227074237,
+          "cer_B": 1.2985074626865671,
+          "cer_A": 1.2686567164179106,
+          "ppg_js_to_B": 0.419313550547955
+        },
+        {
+          "condition": "horizon_800ms_feedback",
+          "utterances": 3,
+          "character_errors": 66,
+          "reference_characters": 67,
+          "mcd_db": 11.081433589595271,
+          "stoi": 0.2813055142490968,
+          "f0_rmse_hz": 56.96915367608004,
+          "f0_rmse_cents": 442.3787288068558,
+          "vuv_error_rate": 0.43580786026200874,
+          "cer_B": 0.9850746268656716,
+          "cer_A": 0.8208955223880597,
+          "ppg_js_to_B": 0.4231386196693987
+        }
+      ],
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 39,
+          "aggregates": 13
+        }
+      },
+      "provenance": {
+        "asr_model_id": "openai/whisper-large-v3",
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1"
+      },
+      "depends_on": [
+        "cross-utterance"
+      ],
+      "reproduction_commands": [
+        "bash scripts/evaluate_cross_utterance.sh"
+      ]
+    },
+    {
+      "id": "extraction-smoke",
+      "title": "JSUT抽出スモークテスト",
+      "status": "smoke",
+      "run_dir": "outputs/jsut_smoke",
+      "entrypoints": [
+        "scripts/extract_jsut.sh"
+      ],
+      "reproduction_command": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_smoke/manifest.jsonl",
+          "sha256": "d370cdc46b826fd9bad0a19107ed33094752ffe703974fa05847c267f50b67db"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "b39d7d4eaea7926280b398fb96f5acb87243e44d",
+      "depends_on": []
+    },
+    {
+      "id": "vq-smoke",
+      "title": "VQスモークテスト",
+      "status": "smoke",
+      "run_dir": "outputs/jsut_tokens_smoke",
+      "entrypoints": [
+        "scripts/model_jsut_tokens.sh"
+      ],
+      "reproduction_command": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_tokens_smoke/config.json",
+          "sha256": "34561c0d14bc432bac3c15154c12656b64bf86f56f20eade371cd8fe6f1f0d4e"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/history.jsonl",
+          "sha256": "13833563a8086ff7992603c9e2320c31034cde2973f16a88dddae10f9819196a"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/reconstruction_metrics.json",
+          "sha256": "7dd5ee393705c5d116dc0c43c223c51d0f05b2f28f218948c9061fbe13cbe04e"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/representatives.json",
+          "sha256": "b38b90e50ce65f3cf002e5dc359a53f32ccc6512359cad38e68db05593cea44c"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/splits.json",
+          "sha256": "52627a864d6c215d079bb5b14b364266f792e227ff85ac26ebe7844db491c7d1"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/training_metrics.json",
+          "sha256": "543f11d5b0da12028fd98e5f64cd07874d51718b327d2e86d5dc8eb337eb5ce9"
+        },
+        {
+          "path": "outputs/jsut_tokens_smoke/transition_metrics.json",
+          "sha256": "ee8968e131d580752fbcdf71fc5de30a41facb71c224037e4cf61535c8573378"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "03717f3877350d01a1e1a50d0afba29ce697288b",
+      "artifact_structure": {
+        "training_metrics.json": {},
+        "reconstruction_metrics.json": {},
+        "transition_metrics.json": {}
+      },
+      "depends_on": []
+    },
+    {
+      "id": "previous-audio-aggregation",
+      "title": "復号条件修正前の試聴出力",
+      "status": "superseded",
+      "run_dir": "outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights",
+      "entrypoints": [
+        "scripts/compare_jsut_audio.sh"
+      ],
+      "reproduction_command": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights/manifest.json",
+          "sha256": "fbadfa9b964cc11a0a46696f137b5317431708ca873b4e7be95b5e8d0b68ac3d"
+        }
+      ],
+      "historical_source_commit": null,
+      "supporting_implementation_commit": "8dd5de789024997dd1488847022ed4564722f79d",
+      "artifact_structure": {
+        "manifest.json": {
+          "records": 5
+        }
+      },
+      "depends_on": [
+        "window-sweep"
+      ]
+    },
+    {
+      "id": "legacy-feedback_control_a_raw",
+      "title": "feedback_control_a_raw",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_control_a_raw",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_control_a_raw/result_summary.json",
+          "sha256": "78a09b83f847fcbffee6d341512517baf098c19fe86f8b557ceba63f5c79484a"
+        },
+        {
+          "path": "outputs/feedback_control_a_raw/validation.json",
+          "sha256": "59af1ea0f8fcfa425c74558345438c889f36a047e477d1b14e791181962bffee"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_control_i",
+      "title": "feedback_control_i",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_control_i",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_control_i/decoder_benchmark.json",
+          "sha256": "92a283900e7b583835a2e37262a7e9e96a3a3c31edf93ff0f33e22e5f6e35bd8"
+        },
+        {
+          "path": "outputs/feedback_control_i/result_summary.json",
+          "sha256": "d85299d48db349aebf2bc41f22368b020020805d82bdb5520692e1bd75d2f3f3"
+        },
+        {
+          "path": "outputs/feedback_control_i/validation.json",
+          "sha256": "1a38adccab3500cf164544ed6fce06a45b59d4424ca57f52e8732a8e9c6507dd"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_control_i_raw",
+      "title": "feedback_control_i_raw",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_control_i_raw",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_control_i_raw/result_summary.json",
+          "sha256": "ec4bcfe9fce47469983f5624a41a1d59e44bddc07033b640bb8d7e2078aa3ba9"
+        },
+        {
+          "path": "outputs/feedback_control_i_raw/validation.json",
+          "sha256": "b65379dfab73159b6682cf3fa56c50246b00f4c8b801a09d559af7fe1225f433"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_control_u_raw",
+      "title": "feedback_control_u_raw",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_control_u_raw",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_control_u_raw/result_summary.json",
+          "sha256": "4e8d43e88a8f98eccc52b04152842a19e62ebaa6f89069e0df383022d8d823b3"
+        },
+        {
+          "path": "outputs/feedback_control_u_raw/validation.json",
+          "sha256": "78bfbff4208f0169acf6225217166bb2f9fd2f3a9719b9994bdd540c7f37e119"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_experiment1",
+      "title": "feedback_experiment1",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_experiment1",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_experiment1/environment.json",
+          "sha256": "4165b2b36333202dfaa29bb6014aa8ff10434031e9f688b98b3064874a8eeefa"
+        },
+        {
+          "path": "outputs/feedback_experiment1/provenance.json",
+          "sha256": "d804cd8689f2c27fd23d96a5a55880d93934e6d5c55f00f55a56df991ca58912"
+        },
+        {
+          "path": "outputs/feedback_experiment1/summary.json",
+          "sha256": "df4bb5970dc5edea6fc4a5e1c87f636110445e84cf3d9bae02e28d8231444028"
+        },
+        {
+          "path": "outputs/feedback_experiment1/validation.json",
+          "sha256": "68284503ebf3f7798c78c13a020177d6b3491744a5e3ab96fde7706e68cd7a40"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_experiment1_a",
+      "title": "feedback_experiment1_a",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_experiment1_a",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_experiment1_a/environment.json",
+          "sha256": "27fa0b7e34a77de794ecc55467a2b03d25cd77055a02934400075e8a7e1acbaf"
+        },
+        {
+          "path": "outputs/feedback_experiment1_a/provenance.json",
+          "sha256": "25deb2d67c160a6e3e2a3979aa89a94edac89dc574d76490a59159d23581e0be"
+        },
+        {
+          "path": "outputs/feedback_experiment1_a/summary.json",
+          "sha256": "98a8bf05dafdc08fdcf05f837425e3d5bb2ad7239b9f6da04a7d92703f04c486"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_experiment1_cpu",
+      "title": "feedback_experiment1_cpu",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_experiment1_cpu",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_experiment1_cpu/environment.json",
+          "sha256": "95c5bd89b8bcec9ab86e7f067f1bf7a156a071ae2599eeed31993fb956dae934"
+        },
+        {
+          "path": "outputs/feedback_experiment1_cpu/provenance.json",
+          "sha256": "25deb2d67c160a6e3e2a3979aa89a94edac89dc574d76490a59159d23581e0be"
+        },
+        {
+          "path": "outputs/feedback_experiment1_cpu/summary.json",
+          "sha256": "ec891827743e797684c49affcd9740087e076d6adbb5081d5f91ccb6f320a9be"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_experiment1_f0",
+      "title": "feedback_experiment1_f0",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_experiment1_f0",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_experiment1_f0/environment.json",
+          "sha256": "e878e6f30184b5889154e7340ef28e14c738149f895ade1371b6da7bc341d3a9"
+        },
+        {
+          "path": "outputs/feedback_experiment1_f0/provenance.json",
+          "sha256": "101de1e0edaed62b9f25c6277664157c845e4fdac045bfe6d3fd5564034e715f"
+        },
+        {
+          "path": "outputs/feedback_experiment1_f0/summary.json",
+          "sha256": "0eb30dcb60601b41fd483197ae34d0602577186880a5bb5e27d16ce7039e8f74"
+        },
+        {
+          "path": "outputs/feedback_experiment1_f0/validation.json",
+          "sha256": "d506d94ee29efd4b25d2ca7f7a9ec21d1fea3a4e1f8cdc6b333859f6220be35b"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-feedback_experiment1_preliminary",
+      "title": "feedback_experiment1_preliminary",
+      "status": "legacy",
+      "run_dir": "outputs/feedback_experiment1_preliminary",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/feedback_experiment1_preliminary/environment.json",
+          "sha256": "55b678b6463ffbb75872da5ddc106a41a3fd0a72adec676f9d8ad68d7dea2ff2"
+        },
+        {
+          "path": "outputs/feedback_experiment1_preliminary/provenance.json",
+          "sha256": "d804cd8689f2c27fd23d96a5a55880d93934e6d5c55f00f55a56df991ca58912"
+        },
+        {
+          "path": "outputs/feedback_experiment1_preliminary/summary.json",
+          "sha256": "9bfee71b28802ab6877d4eb834b9e06e4d6d883ab66915a36ec9558a771dd3c9"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    },
+    {
+      "id": "legacy-japanese_demo_raw",
+      "title": "japanese_demo_raw",
+      "status": "legacy",
+      "run_dir": "outputs/japanese_demo_raw",
+      "entrypoints": [],
+      "implementation_branch": "research/japanese-demo-acoustics",
+      "implementation_reference_commit": "03781a032085f86d1912b3c87579ce3241e097a1",
+      "historical_source_commit": null,
+      "report": null,
+      "evidence": [
+        {
+          "path": "outputs/japanese_demo_raw/comparison.csv",
+          "sha256": "ae802f26d82a5931716637de8b5470c3bdb0fda9f31ed61e52d270ab3920ade5"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/error_statistics.csv",
+          "sha256": "e5b832058401e2c54772d7fe6cae0b3eb2840627025d7a636ef8da08dcca4c22"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/error_statistics.json",
+          "sha256": "85ed441138674791d4aa0f5d59b56bd08b737b86e5a2824c64ea861c41e026df"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/original_acoustics.csv",
+          "sha256": "7eff775e71d99a5656562d0297020447411f25aaf31d778387ec61084c3078b6"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/resynthesis_acoustics.csv",
+          "sha256": "88772b9a7bfaf34c5125d1a8d65d66a5638ba6354ab28df35fe57a7c1631854b"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/source_provenance.json",
+          "sha256": "7dc6f852136ee6ca6db042810672ce78b02087019b98e17d20e1d10331a4c93e"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/summary.json",
+          "sha256": "d63d1fac1a54351d512099a49f96899770adfcc232027334a5f03cb49070fa8d"
+        },
+        {
+          "path": "outputs/japanese_demo_raw/validation.json",
+          "sha256": "32c31cc0a0a6cab9c0ea84dea8c6e2fccc6196f884dffdd54eb962666766f03f"
+        }
+      ],
+      "note": "旧コードと詳細報告は保全するローカルブランチを参照。実行時点の厳密なソース版は未確認。",
+      "depends_on": []
+    }
+  ]
+}

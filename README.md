@@ -64,6 +64,23 @@ with np.load("outputs/features.npz", allow_pickle=False) as features:
 # ema, pitch, loudness, periodicity, pitch_stats, spk_emb, ft_len
 ```
 
+## 研究コードと実験記録
+
+| 目的 | 手順・結果 |
+|---|---|
+| JSUTのEMA・F0抽出、VQ、時間窓・コード数・トークン周期の比較 | [JSUTパイプライン](docs/jsut-pipeline.md) |
+| 日本語PPG、局所探索、遷移制約、逐次FB、A→B実験、Whisper large-v3評価 | [PPG制御と音声評価](docs/ppg-control.md) |
+| 実験の条件・主要結果・ローカルの音声レポート | [実験一覧](reports/experiments.md) |
+| 機械可読の成果物・検証記録・モデル版の索引 | [実験レジストリ](reports/experiments.json) |
+| 整理前のブランチと統合・保全の対応 | [ブランチ対応表](reports/branch-history.md) |
+
+主な研究条件は **40 ms・128コード・50 Hz**。トークン遷移は観測された一次マルコフ連鎖であり、隠れ状態を推定するHMMは未導入。
+PPG差の低下だけでは発話の明瞭度改善を示さなかったため、音声比較とWhisper large-v3のCER等を併用する。
+
+`outputs/`・`datasets/`内のローカルデータ・`.cache/`の重みはこのGit履歴には含めない。
+新規cloneでも手順と結果概要は読めるが、音声レポートを開くには該当のローカル成果物が必要。
+過去のJSUT実行時にはコードが未コミットだったため、今回の機能別コミットを当時の厳密なソース版とは扱わない。
+
 ## Installation
 
 ```
