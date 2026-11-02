@@ -321,4 +321,3 @@ bash scripts/sweep_jsut_codebooks.sh --device cuda
 候補は `--codebooks 64 128 256 512`、窓は `--windows-ms 20 40`、
 出力先は `--output-dir`、基準モデルの保存先は `--reference-root` で指定する。
 単一コード数の窓比較には `sweep_jsut_windows.sh --codebook-size 256 --windows-ms 20 40` も使える。
-

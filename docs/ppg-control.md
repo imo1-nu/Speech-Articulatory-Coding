@@ -263,4 +263,3 @@ MCD・STOI・F0 RMSE・V/UV誤り率の参照はB原音で、A由来の抑揚等
 BのPPGとのJSに加え、長さを合わせたAの初期合成PPGとのJSも記録する。
 全体CERは各正解文の文字数、PPG差・音響指標は対応フレーム数等で集計する。
 `audio_metrics/index.html` に全認識文と指標を、全体の `index.html` にA/Bの正解文と音声比較を掲載する。
-
