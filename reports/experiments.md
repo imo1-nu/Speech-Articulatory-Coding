@@ -40,6 +40,7 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 | A→BのCER(A/B)と音響評価 | 完了 | [outputs/jsut_ppg_A_to_B/audio_metrics](../outputs/jsut_ppg_A_to_B/audio_metrics/index.html) | [scripts/evaluate_cross_utterance.sh](../scripts/evaluate_cross_utterance.sh) |
 | 量子化なし連続AEの学習 | 完了 | [学習記録](../outputs/jsut_reconstruction_ablation/continuous_ae/) | [学習スクリプト](../scripts/train_continuous_ae.sh) |
 | VQ128・VQ512・連続AEの再構成比較 | 完了 | [音声・カ行候補の比較](../outputs/jsut_reconstruction_ablation/comparison/index.html) | [比較スクリプト](../scripts/compare_trajectory_reconstruction.sh) |
+| 固定連続AEのRVQ・128コード×1/2/4/8段 | 完了 | [音声・カ行候補の比較](../outputs/jsut_rvq/comparison_verified/index.html) | [RVQ手順](../docs/jsut-pipeline.md#固定した連続aeへのrvq) |
 | JSUT抽出スモークテスト | スモーク | [outputs/jsut_smoke](../outputs/jsut_smoke) | [scripts/extract_jsut.sh](../scripts/extract_jsut.sh) |
 | VQスモークテスト | スモーク | [outputs/jsut_tokens_smoke](../outputs/jsut_tokens_smoke) | [scripts/model_jsut_tokens.sh](../scripts/model_jsut_tokens.sh) |
 | 復号条件修正前の試聴出力 | 置換済み | [outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights](../outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights) | [scripts/compare_jsut_audio.sh](../scripts/compare_jsut_audio.sh) |
@@ -203,6 +204,46 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 この結果は量子化を含む学習・表現の制約が大きいことを示唆するが、離散ボトルネックの瞬間的な誤差だけを分離した因果推定ではない。
 元軌道合成PPGから選んだk/ky候補9区間の音声・共通スケールのスペクトル・TDX/TDY位置と速度をレポートに掲載した。
 候補は正解音素境界ではなく、音声評価は5発話に限られる。速度損失・音声損失・RVQはこの比較では未導入。
+
+### 固定連続AEへのRVQ
+
+作業ブランチは `research/trajectory-rvq`、実装は `231874f`。
+同じ40 ms窓・50 Hz・4500/250/250分割・訓練正規化を使用する。
+学習済み連続AEを固定し、訓練発話の潜在表現と残差に128中心のMiniBatchKMeansを順に適用した。
+1/2/4/8段は共通8段モデルの接頭部。テスト発話のトークンIDだけから復号して合成し、連続潜在表現の迂回路はない。
+既存VQは同時学習、今回は固定AEへの事後量子化なので学習方法も異なる。
+
+軌道はテスト250発話・58,629フレーム、音声は従来と同じ5発話・正解99文字。
+音声条件は固定し、MCD/STOI/F0/VUVの参照は元軌道合成、CERはWhisper large-v3とJSUT正解文。
+既存5条件の音声指標はモデル・生成器・波形ハッシュと認識設定を照合して再利用した。
+
+| 条件 | 公称bit/s | 標準化MSE ↓ | 差分MSE ↓ | MCD dB ↓ | STOI ↑ | CER % ↓ |
+|---|---:|---:|---:|---:|---:|---:|
+| VQ128 | 350 | 0.1067924 | 0.0474726 | 5.0591 | 0.8757 | 42.42 |
+| VQ512 | 450 | 0.0862074 | 0.0402363 | 4.7737 | 0.8919 | 41.41 |
+| RVQ128×1 | 350 | 0.1081399 | 0.0490674 | 4.9520 | 0.8853 | 41.41 |
+| RVQ128×2 | 700 | 0.0439438 | 0.0282975 | 4.2315 | 0.9145 | 19.19 |
+| RVQ128×4 | 1400 | 0.0150450 | 0.0146060 | 3.2740 | 0.9569 | 10.10 |
+| RVQ128×8 | 2800 | 0.0028655 | 0.0036157 | 2.3156 | 0.9840 | 15.15 |
+| 連続AE | — | 0.0004723 | 0.0003422 | 1.8455 | 0.9900 | 15.15 |
+
+公称bit/sはトークンのみ・エントロピー符号化なし。連続AEは同一情報量の比較ではない。
+元音声CERは9.09%、元軌道合成は14.14%。段数を増やすと軌道誤差・MCD・STOIが改善し、
+RVQ8段は連続AEに近づく。テストで全8段それぞれ128/128コードが使用され、perplexityは122.70〜127.47。
+6〜10 Hzエネルギー比はRVQ1/2/4/8で0.6800/0.7369/0.8599/0.9501、連続AEは0.9758。
+
+CERは4段10/99文字、8段15/99文字で単調改善しない。
+F0 RMSEもRVQ1/2/4/8で5.83/8.03/9.21/5.47 Hzと単調改善せず、4段はVQ128の5.58 Hzより大きい。
+入力F0が同じでも、生成波形から測定するF0は調音軌道や抽出誤差の影響を受ける。
+4段のCERが元軌道合成より低くても、元軌道の再現精度やカ行の正解率が上回ったとは解釈しない。
+再現優先の候補は8段、情報量との折り合いを見る候補は4段。音声5発話の予備評価であり、
+同一ビットレートでの方式優劣や、主観的明瞭度の確定には使わない。
+
+試聴ページには元音声・元軌道合成・VQ128/512・連続AE・RVQ全4条件と、参照PPGによるk/ky候補9区間のクリップを掲載。
+元データ、既存モデル・音声を変更していない。最初の比較出力も保持し、最終比較では保存トークン復号を明示し、
+最初の比較と全20本のRVQ音声が一致することを確認した。詳細は最終比較のmanifest・verificationを参照。
+保存トークンのCPU再復号と評価時GPU復号の軌道差は最大1.20×10⁻⁶未満。
+RVQの残差・段数接頭部・トークン復号・訓練分割限定のテストを追加し、全84件のテストとシェル構文検証が通った。
 
 ## 旧実験と保全した履歴
 

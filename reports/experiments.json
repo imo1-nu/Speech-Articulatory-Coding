@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261102T091648Z",
+  "generated_at_utc": "20261103T031420Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -2876,6 +2876,275 @@
           "f0_rmse_hz": 5.325835135906976,
           "f0_rmse_cents": 41.35800399713149,
           "vuv_error_rate": 0.038976148923792905
+        }
+      ]
+    },
+    {
+      "id": "frozen-ae-rvq",
+      "title": "固定連続AEのRVQ128×1/2/4/8段と既存VQ・連続AEの比較",
+      "status": "complete",
+      "branch": "research/trajectory-rvq",
+      "run_dir": "outputs/jsut_rvq/comparison_verified",
+      "report": "outputs/jsut_rvq/comparison_verified/index.html",
+      "entrypoints": [
+        "scripts/train_trajectory_rvq.sh",
+        "scripts/compare_trajectory_rvq.sh"
+      ],
+      "reproduction_commands": [
+        "bash scripts/train_trajectory_rvq.sh",
+        "bash scripts/compare_trajectory_rvq.sh --output-dir outputs/jsut_rvq/comparison_verified"
+      ],
+      "supporting_implementation_commit": "231874f37f9c26515641ec525e67b66962d4e538",
+      "historical_source_commit": "3add96f4bea482329c4298ad1171ede60f48d972",
+      "historical_source_note": "Run was launched before implementation commit; executable source hashes identify the committed files.",
+      "depends_on": [
+        "continuous-ae",
+        "reconstruction-ablation"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/manifest.json",
+          "sha256": "9d6db3c345b5860d77fa7b5d3b9882455bd890260ebaec2e4b69b62388685ac0"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/verification.json",
+          "sha256": "2c3f9a35d037ce956c408e74c33c83d7e5ad843065c824a6ec16b9b7a5956fb9"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/audio_aggregates.csv",
+          "sha256": "c0382cd27c257f70fbb94406a47ec9f465ebf31ca4fba99bd3b42acefaf15718"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/audio_metrics.csv",
+          "sha256": "fb526b9363e3e6533267f4fcf75f318e5b6b074001b248d50cd6191e2638605b"
+        },
+        {
+          "path": "outputs/jsut_rvq/model/config.json",
+          "sha256": "c36098f0d71ab7b92f4b5e73794efb7b4f6e73d33b9a11854abaa11b0a6c352d"
+        },
+        {
+          "path": "outputs/jsut_rvq/model/codebooks.npz",
+          "sha256": "e577084cd1d72224cc5886b2ed1c0d00e0778854146a5a79015d30075cb0a7c6"
+        }
+      ],
+      "test_trajectory_metrics": {
+        "vq128": {
+          "frames": 58629,
+          "normalized_mse": 0.10679242126944856,
+          "delta_mse": 0.047472580911535577,
+          "velocity_energy_ratio": 0.9094299814851402,
+          "trajectory_6_to_10_hz_energy_ratio": 0.6636323557296168
+        },
+        "vq512": {
+          "frames": 58629,
+          "normalized_mse": 0.08620738659380074,
+          "delta_mse": 0.0402362769092795,
+          "velocity_energy_ratio": 0.9092986937186723,
+          "trajectory_6_to_10_hz_energy_ratio": 0.6786342410539704
+        },
+        "continuous_ae": {
+          "frames": 58629,
+          "normalized_mse": 0.0004722706913658544,
+          "delta_mse": 0.00034217440891936814,
+          "velocity_energy_ratio": 0.9879294574860232,
+          "trajectory_6_to_10_hz_energy_ratio": 0.9757595875316466
+        },
+        "rvq1": {
+          "frames": 58629,
+          "normalized_mse": 0.10813990661116066,
+          "delta_mse": 0.049067361058866804,
+          "velocity_energy_ratio": 0.9276809222619239,
+          "trajectory_6_to_10_hz_energy_ratio": 0.6800212974658162
+        },
+        "rvq2": {
+          "frames": 58629,
+          "normalized_mse": 0.04394379564127779,
+          "delta_mse": 0.028297524464776576,
+          "velocity_energy_ratio": 0.9546408949334529,
+          "trajectory_6_to_10_hz_energy_ratio": 0.7368695146096363
+        },
+        "rvq4": {
+          "frames": 58629,
+          "normalized_mse": 0.015044993902459086,
+          "delta_mse": 0.014605976538193722,
+          "velocity_energy_ratio": 0.9970585640129856,
+          "trajectory_6_to_10_hz_energy_ratio": 0.8599373474189153
+        },
+        "rvq8": {
+          "frames": 58629,
+          "normalized_mse": 0.00286548177293574,
+          "delta_mse": 0.003615725738792281,
+          "velocity_energy_ratio": 0.9931286419889651,
+          "trajectory_6_to_10_hz_energy_ratio": 0.9500962566287205
+        }
+      },
+      "summary_rows": [
+        {
+          "condition": "original",
+          "utterances": 5,
+          "cer": 0.09090909090909091,
+          "character_errors": 9,
+          "reference_characters": 99,
+          "mcd_db": 6.763565988377051,
+          "stoi": 0.8400675246717586,
+          "f0_rmse_hz": 9.123694812525127,
+          "f0_rmse_cents": 73.58450166625559,
+          "vuv_error_rate": 0.07969749854566609
+        },
+        {
+          "condition": "original_ema",
+          "utterances": 5,
+          "cer": 0.1414141414141414,
+          "character_errors": 14,
+          "reference_characters": 99,
+          "mcd_db": 0.0,
+          "stoi": 0.9999999999999994,
+          "f0_rmse_hz": 0.0,
+          "f0_rmse_cents": 0.0,
+          "vuv_error_rate": 0.0
+        },
+        {
+          "condition": "vq128",
+          "utterances": 5,
+          "cer": 0.42424242424242425,
+          "character_errors": 42,
+          "reference_characters": 99,
+          "mcd_db": 5.059096030157827,
+          "stoi": 0.8756775124586522,
+          "f0_rmse_hz": 5.583731921305017,
+          "f0_rmse_cents": 48.55797933483523,
+          "vuv_error_rate": 0.06631762652705062
+        },
+        {
+          "condition": "vq512",
+          "utterances": 5,
+          "cer": 0.41414141414141414,
+          "character_errors": 41,
+          "reference_characters": 99,
+          "mcd_db": 4.773699088068432,
+          "stoi": 0.8918653682060125,
+          "f0_rmse_hz": 5.440297770369614,
+          "f0_rmse_cents": 48.33795395155183,
+          "vuv_error_rate": 0.059336823734729496
+        },
+        {
+          "condition": "continuous_ae",
+          "utterances": 5,
+          "cer": 0.15151515151515152,
+          "character_errors": 15,
+          "reference_characters": 99,
+          "mcd_db": 1.845497220559918,
+          "stoi": 0.9900057822217532,
+          "f0_rmse_hz": 5.325835135906976,
+          "f0_rmse_cents": 41.35800399713149,
+          "vuv_error_rate": 0.038976148923792905
+        },
+        {
+          "condition": "rvq1",
+          "utterances": 5,
+          "cer": 0.41414141414141414,
+          "character_errors": 41,
+          "reference_characters": 99,
+          "mcd_db": 4.951981807499115,
+          "stoi": 0.8852848132631104,
+          "f0_rmse_hz": 5.827018736347297,
+          "f0_rmse_cents": 51.68752758568376,
+          "vuv_error_rate": 0.06806282722513089
+        },
+        {
+          "condition": "rvq2",
+          "utterances": 5,
+          "cer": 0.1919191919191919,
+          "character_errors": 19,
+          "reference_characters": 99,
+          "mcd_db": 4.231542062694357,
+          "stoi": 0.9144611962545481,
+          "f0_rmse_hz": 8.02759475954008,
+          "f0_rmse_cents": 60.85677438186899,
+          "vuv_error_rate": 0.058173356602675974
+        },
+        {
+          "condition": "rvq4",
+          "utterances": 5,
+          "cer": 0.10101010101010101,
+          "character_errors": 10,
+          "reference_characters": 99,
+          "mcd_db": 3.2739584167587026,
+          "stoi": 0.9568817997113431,
+          "f0_rmse_hz": 9.209399218608944,
+          "f0_rmse_cents": 65.25690307863042,
+          "vuv_error_rate": 0.04537521815008726
+        },
+        {
+          "condition": "rvq8",
+          "utterances": 5,
+          "cer": 0.15151515151515152,
+          "character_errors": 15,
+          "reference_characters": 99,
+          "mcd_db": 2.3156064322630376,
+          "stoi": 0.9840210398534737,
+          "f0_rmse_hz": 5.4721799677136795,
+          "f0_rmse_cents": 42.0388314037029,
+          "vuv_error_rate": 0.03781268179173938
+        }
+      ],
+      "provenance": {
+        "source_sha256": "708b47525634aeafce5257324ea1e6871e369684980695ce26a2694ed6d8119d",
+        "rvq_source_sha256": "fd328aaaac2b4207b185588682051880fe195c75b690314645acc0f7ff765766",
+        "metric_source_sha256": "a39a786475f1dd21ef5634786a3aac2c0afbc7b394a5a0e726869a1019d5aa2d",
+        "codebooks_sha256": "e577084cd1d72224cc5886b2ed1c0d00e0778854146a5a79015d30075cb0a7c6",
+        "baseline_manifest_sha256": "872a4cdbff37f81ad5381f758b5ea5368d62d1d959d85e1e7651ac8626bdd6cd",
+        "asr_model": "openai/whisper-large-v3",
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+        "asr_settings": {
+          "language": "ja",
+          "task": "transcribe",
+          "num_beams": 1,
+          "do_sample": false,
+          "max_new_tokens": 256,
+          "prompt": null
+        }
+      },
+      "test_code_usage": [
+        {
+          "stage": 1,
+          "used": 128,
+          "perplexity": 122.69934001638701
+        },
+        {
+          "stage": 2,
+          "used": 128,
+          "perplexity": 125.35082003096538
+        },
+        {
+          "stage": 3,
+          "used": 128,
+          "perplexity": 126.53583043580149
+        },
+        {
+          "stage": 4,
+          "used": 128,
+          "perplexity": 127.28345370779232
+        },
+        {
+          "stage": 5,
+          "used": 128,
+          "perplexity": 127.4690148981662
+        },
+        {
+          "stage": 6,
+          "used": 128,
+          "perplexity": 127.00525677960587
+        },
+        {
+          "stage": 7,
+          "used": 128,
+          "perplexity": 125.73962248365251
+        },
+        {
+          "stage": 8,
+          "used": 128,
+          "perplexity": 127.2275014927944
         }
       ]
     }
