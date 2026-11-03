@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261103T031420Z",
+  "generated_at_utc": "20261103T034615Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -3147,6 +3147,336 @@
           "perplexity": 127.2275014927944
         }
       ]
+    },
+    {
+      "id": "rvq-first-stage-transition",
+      "title": "RVQ8の1段目だけに遷移ソフト制約を加えたPPG局所探索",
+      "status": "complete",
+      "branch": "research/rvq-first-stage-transition",
+      "run_dir": "outputs/jsut_rvq_first_stage_transition",
+      "report": "outputs/jsut_rvq_first_stage_transition/index.html",
+      "entrypoints": [
+        "scripts/rvq_transition_search.sh"
+      ],
+      "reproduction_command": "bash scripts/rvq_transition_search.sh",
+      "supporting_implementation_commit": "592ba2de740c907f55bb38c7b9df63711a6d536b",
+      "historical_source_commit": "8778ee7eda7c0ad89eaaf7d8e643ea22e4d7e8a7",
+      "historical_source_note": "Run launched before implementation commit; executable source SHA256 identifies committed code.",
+      "depends_on": [
+        "frozen-ae-rvq",
+        "japanese-ppg"
+      ],
+      "evidence": [
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/manifest.json",
+          "sha256": "287b819b567dbc64a41093df480fba2657a0507a9b1c811146931284270807df"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/verification.json",
+          "sha256": "44de0e998e7204598762fddd9e779e1e63ce1449cb6d94ca1674cf87c5d205ea"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/prior_diagnostics.json",
+          "sha256": "09bf766448f867b87217a3a9ab92da1b47ff65b4bef37a5489e7a183413272cf"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/transitions.npz",
+          "sha256": "53c96a3903a3c1167a05c23d270be2fd40518c3ad45c2156f9e504ce04245dd1"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/summary.csv",
+          "sha256": "2c3fd6e6b89c26f634964ea010b8bf0a38aec3b62bf9b951c8fb392f8f985b82"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/audio_metrics.csv",
+          "sha256": "d708f0097f5a10c70469a0cf3dae21a3bf9885e15e75fd98c61d64e33dc3a1c7"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/audio_aggregates.csv",
+          "sha256": "ae3d64256294e1d3744e0c2babae8c113cecd1c36db854c5661918ff236c98dd"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/search_aggregates.csv",
+          "sha256": "2bc9ed82bd34a69cfabfa3a5163e01e6330d4f0a39f2ff6ce8ce25a0172e725b"
+        },
+        {
+          "path": "outputs/jsut_rvq_first_stage_transition/comparison_summary.csv",
+          "sha256": "d7ea7466b3418dc80e3dae5b61399e970507cf31cc7ccacb70296420cbf1cab5"
+        }
+      ],
+      "provenance": {
+        "source_sha256": "3c670d56bebc2a2e50845c04c931bd13e8fd97e112ce52e9539618cb662d7a36",
+        "search_source_sha256": "31b4440768ac1e54c5f770dd656be9ff09b339adcc83636d6025a7c33e31bd39",
+        "codebooks_sha256": "e577084cd1d72224cc5886b2ed1c0d00e0778854146a5a79015d30075cb0a7c6",
+        "ae_sha256": "9a4f54b7da8d9c85347951075d0f6362589a32cc683f6bcdbfe234599b6e340d",
+        "baseline_manifest_sha256": "9d6db3c345b5860d77fa7b5d3b9882455bd890260ebaec2e4b69b62388685ac0",
+        "transition_sha256": "53c96a3903a3c1167a05c23d270be2fd40518c3ad45c2156f9e504ce04245dd1",
+        "generator_sha256": "15c468c2703172b2423efa0459ff40695ef1f08f8312ad3577ee20d277b0485b",
+        "ppg_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+        "asr_model": "openai/whisper-large-v3",
+        "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+        "asr_settings": {
+          "language": "ja",
+          "task": "transcribe",
+          "num_beams": 1,
+          "do_sample": false,
+          "max_new_tokens": 256,
+          "prompt": null
+        },
+        "audio_metric_reference": "original trajectory synthesis",
+        "cer_reference": "JSUT gold text"
+      },
+      "settings": {
+        "weights": [
+          0,
+          0.01,
+          0.03,
+          0.1
+        ],
+        "stages": 8,
+        "prior_stage": 1,
+        "alpha": 1,
+        "passes": 2,
+        "positions_per_stage_per_pass": 24,
+        "neighbors": 12,
+        "global_candidates": 4,
+        "batch_size": 4,
+        "min_improvement": 1e-05,
+        "target": "original natural audio PPG",
+        "mode": "offline whole utterance",
+        "candidate_distance": "latent code vector squared Euclidean",
+        "higher_stage_reencoding": false
+      },
+      "prior_diagnostics": {
+        "fit_split": "train",
+        "fit_utterances": 4500,
+        "observed_transition_types": 5005,
+        "possible_transition_types": 16384,
+        "training_edges": 1096065,
+        "split_scores": {
+          "train": {
+            "transitions": 1096065,
+            "log_likelihood": -2375014.957941217,
+            "nll_per_transition": 2.166855941884119,
+            "perplexity": 8.730790729653126,
+            "unigram_nll_per_transition": 4.814355586139698,
+            "unigram_perplexity": 123.2673515202687
+          },
+          "validation": {
+            "transitions": 59339,
+            "log_likelihood": -128956.66847684004,
+            "nll_per_transition": 2.173219442134853,
+            "perplexity": 8.78652626712364,
+            "unigram_nll_per_transition": 4.81576286241655,
+            "unigram_perplexity": 123.44094485801756
+          },
+          "test": {
+            "transitions": 58379,
+            "log_likelihood": -127205.66045463913,
+            "nll_per_transition": 2.1789626484633025,
+            "perplexity": 8.837134287431052,
+            "unigram_nll_per_transition": 4.814387860040146,
+            "unigram_perplexity": 123.27132990269878
+          }
+        },
+        "split_unseen_transition_fraction": {
+          "train": 0.0,
+          "validation": 0.0005729789851531033,
+          "test": 0.0005310128642148717
+        }
+      },
+      "search_aggregates": [
+        {
+          "weight": 0,
+          "utterances": 5,
+          "baseline_js": 0.15925800517011274,
+          "final_js": 0.05698715341633677,
+          "baseline_nll": 2.1983660295010736,
+          "final_nll": 2.811746667888113,
+          "final_unseen_transition_fraction": 0.059942228752440485,
+          "final_self_transition_fraction": 0.3315048206525937,
+          "velocity_rms_sd_per_s": 20.93584747314453,
+          "acceleration_rms_sd_per_s2": 1101.6716674804688,
+          "edited_stage1": 100,
+          "edited_other_stages": 434,
+          "evaluations": 31475
+        },
+        {
+          "weight": 0.01,
+          "utterances": 5,
+          "baseline_js": 0.15925800517011274,
+          "final_js": 0.05125973953810289,
+          "baseline_nll": 2.1983660295010736,
+          "final_nll": 2.6743464706584428,
+          "final_unseen_transition_fraction": 0.049692308189376505,
+          "final_self_transition_fraction": 0.34489053712317824,
+          "velocity_rms_sd_per_s": 20.782028579711913,
+          "acceleration_rms_sd_per_s2": 1089.3538208007812,
+          "edited_stage1": 88,
+          "edited_other_stages": 531,
+          "evaluations": 31643
+        },
+        {
+          "weight": 0.03,
+          "utterances": 5,
+          "baseline_js": 0.15925800517011274,
+          "final_js": 0.053161568225679724,
+          "baseline_nll": 2.1983660295010736,
+          "final_nll": 2.5372537013671588,
+          "final_unseen_transition_fraction": 0.033190634128982,
+          "final_self_transition_fraction": 0.36001128383600656,
+          "velocity_rms_sd_per_s": 19.97305564880371,
+          "acceleration_rms_sd_per_s2": 1010.2247436523437,
+          "edited_stage1": 83,
+          "edited_other_stages": 438,
+          "evaluations": 31474
+        },
+        {
+          "weight": 0.1,
+          "utterances": 5,
+          "baseline_js": 0.15925800517011274,
+          "final_js": 0.06429862305087088,
+          "baseline_nll": 2.1983660295010736,
+          "final_nll": 2.3245767117939606,
+          "final_unseen_transition_fraction": 0.012873653081257602,
+          "final_self_transition_fraction": 0.37639688061387266,
+          "velocity_rms_sd_per_s": 18.93770065307617,
+          "acceleration_rms_sd_per_s2": 899.7270263671875,
+          "edited_stage1": 63,
+          "edited_other_stages": 463,
+          "evaluations": 31470
+        }
+      ],
+      "summary_rows": [
+        {
+          "condition": "original",
+          "utterances": 5,
+          "cer": 0.09090909090909091,
+          "character_errors": 9,
+          "reference_characters": 99,
+          "mcd_db": 6.763565988377051,
+          "stoi": 0.8400675246717586,
+          "f0_rmse_hz": 9.123694812525127,
+          "f0_rmse_cents": 73.58450166625559,
+          "vuv_error_rate": 0.07969749854566609
+        },
+        {
+          "condition": "original_ema",
+          "utterances": 5,
+          "cer": 0.1414141414141414,
+          "character_errors": 14,
+          "reference_characters": 99,
+          "mcd_db": 0.0,
+          "stoi": 0.9999999999999994,
+          "f0_rmse_hz": 0.0,
+          "f0_rmse_cents": 0.0,
+          "vuv_error_rate": 0.0
+        },
+        {
+          "condition": "rvq8",
+          "utterances": 5,
+          "cer": 0.15151515151515152,
+          "character_errors": 15,
+          "reference_characters": 99,
+          "mcd_db": 2.3156064322630376,
+          "stoi": 0.9840210398534737,
+          "f0_rmse_hz": 5.4721799677136795,
+          "f0_rmse_cents": 42.0388314037029,
+          "vuv_error_rate": 0.03781268179173938
+        },
+        {
+          "condition": "lambda_0",
+          "utterances": 5,
+          "cer": 0.13131313131313133,
+          "character_errors": 13,
+          "reference_characters": 99,
+          "mcd_db": 3.3513536702714926,
+          "stoi": 0.9369683207628563,
+          "f0_rmse_hz": 10.1986688774775,
+          "f0_rmse_cents": 71.96187060796078,
+          "vuv_error_rate": 0.055264688772542175
+        },
+        {
+          "condition": "lambda_0.01",
+          "utterances": 5,
+          "cer": 0.26262626262626265,
+          "character_errors": 26,
+          "reference_characters": 99,
+          "mcd_db": 3.378002124126499,
+          "stoi": 0.9345922417594181,
+          "f0_rmse_hz": 4.823923954792336,
+          "f0_rmse_cents": 40.35803408384361,
+          "vuv_error_rate": 0.051774287376381616
+        },
+        {
+          "condition": "lambda_0.03",
+          "utterances": 5,
+          "cer": 0.1414141414141414,
+          "character_errors": 14,
+          "reference_characters": 99,
+          "mcd_db": 3.4080394090614083,
+          "stoi": 0.9365459999464374,
+          "f0_rmse_hz": 4.893905980656993,
+          "f0_rmse_cents": 43.26147401853527,
+          "vuv_error_rate": 0.06457242582897033
+        },
+        {
+          "condition": "lambda_0.1",
+          "utterances": 5,
+          "cer": 0.1717171717171717,
+          "character_errors": 17,
+          "reference_characters": 99,
+          "mcd_db": 3.160768087297493,
+          "stoi": 0.9494141693573189,
+          "f0_rmse_hz": 4.563646125947258,
+          "f0_rmse_cents": 39.23212366671055,
+          "vuv_error_rate": 0.04304828388598022
+        }
+      ],
+      "trajectory_metrics": {
+        "before": {
+          "frames": 857,
+          "normalized_mse": 0.002734158403592038,
+          "delta_mse": 0.003534246588920786,
+          "velocity_energy_ratio": 0.9958240219067607,
+          "trajectory_6_to_10_hz_energy_ratio": 0.9584240188442154
+        },
+        "lambda_0": {
+          "frames": 857,
+          "normalized_mse": 0.08089969508533,
+          "delta_mse": 0.07290758295238962,
+          "velocity_energy_ratio": 1.490183432949223,
+          "trajectory_6_to_10_hz_energy_ratio": 1.2750679053176024
+        },
+        "lambda_0.01": {
+          "frames": 857,
+          "normalized_mse": 0.07674685587220276,
+          "delta_mse": 0.0726359419707164,
+          "velocity_energy_ratio": 1.4699407436827008,
+          "trajectory_6_to_10_hz_energy_ratio": 1.246845968818736
+        },
+        "lambda_0.03": {
+          "frames": 857,
+          "normalized_mse": 0.057289204502890705,
+          "delta_mse": 0.05641185680435893,
+          "velocity_energy_ratio": 1.3609585589949131,
+          "trajectory_6_to_10_hz_energy_ratio": 1.184182969289308
+        },
+        "lambda_0.1": {
+          "frames": 857,
+          "normalized_mse": 0.03768040023253712,
+          "delta_mse": 0.03802990370531254,
+          "velocity_energy_ratio": 1.2254299984517314,
+          "trajectory_6_to_10_hz_energy_ratio": 1.060407488220084
+        }
+      },
+      "elapsed_seconds": 517.1081106048077,
+      "validation": {
+        "tests": 86,
+        "result": "passed",
+        "trace_steps_checked": 7680,
+        "cpu_token_replay_max_absolute_trajectory_error": 1.1920928955078125e-06
+      }
     }
   ]
 }
