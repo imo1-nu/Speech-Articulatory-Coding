@@ -5,6 +5,36 @@
 コマンドはリポジトリのルートで実行する。以下の`outputs/`はローカル成果物で、Gitには含めない。
 主な研究条件は40 ms・128コード・50 Hzだが、CLIの既存の既定値は変更していない。
 
+## 固定した連続AEへのRVQ
+
+```sh
+uv pip install --python "$HOME/.local/share/sparc/venv/bin/python" -r requirements-rvq.txt
+bash scripts/train_trajectory_rvq.sh
+bash scripts/compare_trajectory_rvq.sh --output-dir outputs/jsut_rvq/comparison_verified
+```
+
+学習済み `outputs/jsut_reconstruction_ablation/continuous_ae` のエンコーダとデコーダを固定し、
+訓練4500発話の潜在表現に各段128中心のMiniBatchKMeansを順番に適用する。
+次段は前段までの量子化残差を学習する。seed=42+段番号、batch_size=4096、max_iter=100、n_init=3。
+検証・テストデータはコードブックの学習に使わず、同じ8段モデルの1/2/4/8段の接頭部を比較する。
+今回はAEとの同時学習、速度損失、音声損失、遷移制約は追加しない。
+
+モデルは `outputs/jsut_rvq/model`、最終レポートは `outputs/jsut_rvq/comparison_verified/index.html`。
+最初の比較 `outputs/jsut_rvq/comparison` も保存している。
+最終比較はテスト250発話のトークンIDを `tokens/` に保存し、各段のコードベクトルを足し合わせて
+デコーダへ渡す。連続潜在表現を合成へ直接渡す経路は使わない。
+音声は従来と同じ5発話、元音声・元軌道合成・VQ128・VQ512・連続AE・RVQ4条件を試聴できる。
+既存音声の指標は波形ハッシュ・AE・生成器・Whisper版と設定を照合して再利用する。
+F0・音量・話者・ゲインと音響指標の参照は以前の比較と同一。
+元軌道合成PPGから選んだ既存のk/ky候補9区間についても全条件の音声クリップを作る。
+
+RVQ1/2/4/8段の公称ビットレートは350/700/1400/2800 bit/s（50 Hz・各段7 bit）。
+VQ128は350、VQ512は450 bit/sなので、段数の違いは同一ビットレートの比較ではない。
+VQはエンコーダ・デコーダも量子化と同時学習しており、固定AEとの学習方法の差も含む。
+コード使用数・perplexity・各種MSE・速度／帯域エネルギー比はmanifest、
+CER・MCD・STOI・F0/VUVと認識文はCSVに保存する。
+既存出力先は上書きしない。再学習には新しい `--output-dir`、比較時は対応する `--model-dir` と新しい `--output-dir` を指定する。
+
 ## 再構成の切り分け：VQ128・VQ512・連続AE
 
 ```sh
