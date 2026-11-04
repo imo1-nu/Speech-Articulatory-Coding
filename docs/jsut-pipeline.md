@@ -16,7 +16,7 @@ bash scripts/wavlm_feedback_experiment.sh --objective wavlm --mode delayed --hor
 # 同じコード・引数・入力で未完了の比較を再開する場合
 bash scripts/wavlm_feedback_experiment.sh --resume
 # 完了後：保存音声・全探索履歴・観測制限・トークン復号を独立検証
-uv run --no-project --python "$HOME/.local/share/sparc/venv/bin/python" -m sparc.verify_wavlm_feedback
+bash scripts/verify_wavlm_feedback.sh
 ```
 
 WavLM-largeのrevision `c1423ed94bb01d80a3f5ce5bc39f6026a0f4828c`、`hidden_states[9]`の1024次元を使う。
