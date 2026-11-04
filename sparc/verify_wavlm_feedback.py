@@ -68,6 +68,7 @@ def main():
                 if variant=='original':np.testing.assert_allclose(value,targets[name],atol=1e-4,rtol=0)
             baseline_feature_rows.append(row)
     for row in records:
+        assert row['evaluations']==row['synthesis_candidates']
         if row.get('execution_sources') not in [m['sources'],*m.get('source_history',[])]:
             raise ValueError('Condition execution source is not recorded in source history')
         path=root/row['audio'];folder=path.parent
@@ -138,6 +139,7 @@ def main():
             if row['control']=='unedited':np.testing.assert_array_equal(tokens,original)
         np.testing.assert_array_equal(replay_tokens,tokens)
     with (root/'audio_metrics.csv').open() as stream:audio_rows=list(csv.DictReader(stream))
+    natural_rows=[];natural_references={}
     for row in audio_rows:
         source=next(s for s in m['inputs'] if s['utterance_id']==row['utterance_id'])
         if row['condition'] in ('before','original','original_ema'):path=root/source['directory']/f'{row["condition"]}.wav'
@@ -145,6 +147,18 @@ def main():
         assert sha256_file(path)==row['audio_sha256']
         actual=metrics.character_errors(row['reference_text'],row['asr_text'])
         assert actual['character_errors']==int(row['character_errors'])
+        utterance=row['utterance_id']
+        if utterance not in natural_references:
+            natural=metrics.read_audio(root/source['directory']/'original.wav')
+            natural_references[utterance]=(natural,metrics.world_features(natural))
+        natural,ref_features=natural_references[utterance]
+        natural_rows.append({'condition':row['condition'],'utterance_id':utterance,
+                             'cer':actual['cer'],'character_errors':actual['character_errors'],
+                             'reference_characters':actual['reference_characters'],
+                             **metrics.acoustic_scores(natural,metrics.read_audio(path),ref_features)})
+    natural_aggregates=metrics.aggregate(natural_rows)
+    save_csv(root/'audio_metrics_natural_reference.csv',natural_rows)
+    save_csv(root/'audio_aggregates_natural_reference.csv',natural_aggregates)
     comparisons=[]
     for condition in ['before','original_ema','original',*dict.fromkeys(r['condition'] for r in records)]:
         feature_rows=([r for r in baseline_feature_rows if r['condition']==condition]
@@ -155,8 +169,17 @@ def main():
                             'ppg_js':float(np.mean([r['ppg_js'] for r in feature_rows])),
                             'cer':audio['cer'],'mcd_db':audio['mcd_db'],'stoi':audio['stoi']})
     save_csv(root/'comparison_summary.csv',comparisons)
+    natural_comparisons=[]
+    for row in comparisons:
+        audio=next(r for r in natural_aggregates if r['condition']==row['condition'])
+        natural_comparisons.append({**row,'cer':audio['cer'],'mcd_db':audio['mcd_db'],'stoi':audio['stoi']})
+    save_csv(root/'comparison_summary_natural_reference.csv',natural_comparisons)
     save_csv(root/'baseline_feature_metrics.csv',baseline_feature_rows)
     verification={'conditions_checked':len(records),'delayed_decisions_checked':decisions,'coordinates_checked':coordinates,
+                  'candidate_evaluations':sum(r['evaluations'] for r in records),
+                  'sum_condition_seconds':sum(r['seconds'] for r in records),
+                  'device':torch.cuda.get_device_name(args.device) if args.device.startswith('cuda') else args.device,
+                  'cuda_version':torch.version.cuda,
                   'source_and_dependency_hashes_match':True,'baseline_waveforms_unchanged':True,
                   'cutoff_input_and_prefix_hashes_match':True,'committed_audio_immutable':True,
                   'non_feedback_bias_zero':True,'independently_reextracted_saved_features':True,
@@ -169,8 +192,13 @@ def main():
     marker='<p id="verification-summary">'
     if marker in page:page=page[:page.index(marker)]+page[page.index('</p>',page.index(marker))+4:]
     before=comparisons[0]
-    insert=(marker+f'編集前の5発話平均：WavLM距離 {before["wavlm_distance"]:.5f}、PPG JS {before["ppg_js"]:.5f}。'
+    insert=(marker+f'編集前の{len(m["inputs"])}発話平均：WavLM距離 {before["wavlm_distance"]:.5f}、PPG JS {before["ppg_js"]:.5f}。'
             '<a href="comparison_summary.csv">編集前を含む比較CSV</a> / <a href="verification.json">独立検証結果</a></p>')
+    insert+=('<p id="natural-reference-summary">主評価のMCD/STOI/F0は元軌道合成参照。補助評価として '
+             '<a href="comparison_summary_natural_reference.csv">元音声参照の比較CSV</a> / '
+             '<a href="audio_aggregates_natural_reference.csv">元音声参照の全音響指標</a> も保存しました。</p>')
+    marker2='<p id="natural-reference-summary">'
+    if marker2 in page:page=page[:page.index(marker2)]+page[page.index('</p>',page.index(marker2))+4:]
     page=page.replace('<h2>特徴量・計算時間',insert+'<h2>特徴量・計算時間',1)
     (root/'index.html').write_text(page,encoding='utf-8')
     print(json.dumps(verification,indent=2))
