@@ -28,6 +28,12 @@ from .trajectory_rvq import load_rvq
 from .trajectory_vq import overlap_average
 
 
+def save_feature_metrics(path,records):
+    # Nested audit metadata stays in JSON; keep the CSV schema identical across modes.
+    excluded={'terminal_observation','execution_sources'}
+    save_csv(path,[{k:v for k,v in row.items() if k not in excluded} for row in records])
+
+
 def write_report(output,manifest,rows):
     groups=metrics.aggregate(rows) if rows else []
     if groups:save_csv(output/'audio_aggregates.csv',groups)
@@ -115,7 +121,7 @@ def main():
                                'min_improvement':1e-5,'prior_stage':1,'delayed_weight':.03,
                                'delay_ms':60,'step_ms':20,'crossfade_ms':10,'feedback_gain':.5,
                                'feedback_rate_per_100ms':.25,'feedback_clip':1},'inputs':selected,'records':[],
-              'baseline_features':[]}
+              'baseline_features':[], 'source_history':previous.get('source_history',[]) if args.resume else []}
     write_json(args.output_dir/'manifest.json',manifest)
     source_audio=json.loads((Path(rvq['reference_dir'])/'audio_comparison/manifest.json').read_text())
     prepared=[]
@@ -203,6 +209,7 @@ def main():
                                  'control':control,'weight':weight,'audio':path.relative_to(args.output_dir).as_posix(),
                                  'audio_sha256':sha256_file(path),'result_sha256':sha256_file(directory/'result.npz'),
                                  'trace_sha256':sha256_file(directory/'trace.jsonl'),
+                                 'execution_sources':sources,
                                  'wavlm_distance':distances['wavlm'],'ppg_js':distances['ppg'],
                                  'wavlm_raw_mse':float(np.square(targets['wavlm'][:n]-values['wavlm'][:n]).mean()),
                                  'first_stage_nll':first['transition_nll'],'unseen_transition_fraction':first['unseen_transition_fraction'],
@@ -215,7 +222,7 @@ def main():
                         if 'terminal_observation' in result:summary['terminal_observation']=result['terminal_observation']
                         write_json(summary_path,summary)
                     manifest['records'].append(summary)
-                    save_csv(args.output_dir/'feature_metrics.csv',manifest['records'])
+                    save_feature_metrics(args.output_dir/'feature_metrics.csv',manifest['records'])
                     write_report(args.output_dir,manifest,[]);write_json(args.output_dir/'manifest.json',manifest)
                     print(f'DONE {condition} {rec["utterance_id"]}: WavLM={summary["wavlm_distance"]:.5f} PPG={summary["ppg_js"]:.5f} seconds={summary["seconds"]:.1f}',flush=True)
     # ASR is loaded after search to keep GPU memory available for candidate evaluation.

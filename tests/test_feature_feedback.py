@@ -1,4 +1,7 @@
 import unittest
+import tempfile
+import csv
+from pathlib import Path
 from collections import OrderedDict
 from types import SimpleNamespace
 import numpy as np
@@ -7,6 +10,7 @@ import torch
 from sparc.feedback_features import FeatureObjective,FeatureObserver
 from sparc.feature_feedback_search import optimize,delayed
 from sparc.sequential_ppg_search import stitch_prediction
+from sparc.wavlm_feedback_experiment import save_feature_metrics
 
 
 def objective(name='wavlm',dim=2):
@@ -16,6 +20,17 @@ def objective(name='wavlm',dim=2):
 
 
 class FeatureFeedbackTest(unittest.TestCase):
+    def test_mixed_offline_and_delayed_records_share_csv_schema(self):
+        rows=[{'condition':'offline','seconds':1},
+              {'condition':'delayed','seconds':2,'terminal_observation':{'used_for_control':False},
+               'execution_sources':{'test':'hash'}}]
+        with tempfile.TemporaryDirectory() as temporary:
+            path=Path(temporary)/'features.csv';save_feature_metrics(path,rows)
+            with path.open() as stream:saved=list(csv.DictReader(stream))
+            self.assertEqual(len(saved),2)
+            self.assertEqual(list(saved[0]),['condition','seconds'])
+            self.assertEqual(saved[1]['condition'],'delayed')
+
     def test_wavlm_preprocessing_and_fresh_extraction_bypass_cache(self):
         obj=objective('wavlm',1024);obj.device='cpu';obj.cache=OrderedDict();obj.calls=0;obj.seconds=0.
         captured=[]
