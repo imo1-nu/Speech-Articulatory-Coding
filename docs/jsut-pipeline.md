@@ -44,6 +44,9 @@ WavLMやPPGの過去の内部状態を、変更された候補の特徴量とし
 出力は `outputs/jsut_wavlm_feedback/`。試聴HTML、音声指標CSV、特徴量CSV、各条件のトークン・軌道・特徴量時刻・
 遅延FBバイアス・探索履歴・計算時間と評価数を保存する。
 MCD/STOI/F0/VUVは元軌道合成参照、CERはWhisper large-v3とJSUT正解文。
+独立検証は保存WAVと全観測接頭辞から特徴量・FBバイアスを再生し、トークンの編集履歴と確定済み波形も照合する。
+同時に、元音声参照の補助音響指標を `*_natural_reference.csv` に保存する。
+`comparison_summary.csv` は元軌道合成参照、`comparison_summary_natural_reference.csv` は元音声参照で、参照を混在させない。
 目標距離の尺度が異なるため、同じλを両方式の同じ制約強度とは解釈しない。
 既存出力は上書き保護し、`--resume` はソース・引数・依存成果物が一致する場合だけ完了条件を再利用する。
 WavLMとPPGのモデルは検索中に保持し、Whisperは探索終了後にロードする。
