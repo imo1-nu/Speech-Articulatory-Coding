@@ -43,7 +43,13 @@ def main():
     condition_count=(len(m['settings']['weights']) if m['settings']['mode'] in ('all','offline') else 0)
     condition_count+=(3 if m['settings']['mode'] in ('all','delayed') else 0)
     if len(records)!=len(m['inputs'])*objective_count*condition_count:raise ValueError('Missing conditions')
-    max_replay=0.;max_feature_error=0.;decisions=0;coordinates=0;baseline_hashes={}
+    unedited_pairs=0
+    for source in m['inputs']:
+        pair=[r for r in records if r['utterance_id']==source['utterance_id'] and r['control']=='unedited']
+        if len(pair)==2:
+            if pair[0]['audio_sha256']!=pair[1]['audio_sha256']:raise ValueError('Unedited renderer differs between objectives')
+            unedited_pairs+=1
+    max_replay=0.;max_feature_error=0.;decisions=0;coordinates=0;baseline_hashes={};baseline_feature_rows=[]
     for source in m['inputs']:
         folder=source['directory']
         for variant in ('original','original_ema','before'):
@@ -51,7 +57,19 @@ def main():
             if sha256_file(root/folder/f'{variant}.wav')!=sha256_file(args.baseline_dir/folder/f'{old}.wav'):
                 raise ValueError('Baseline audio changed')
         baseline_hashes[source['utterance_id']]=sha256_file(root/folder/'before.wav')
+        targets=np.load(root/folder/'targets.npz')
+        for variant in ('before','original_ema','original'):
+            wave=metrics.read_audio(root/folder/f'{variant}.wav')
+            row={'condition':variant,'utterance_id':source['utterance_id']}
+            for name,obj in objectives.items():
+                value=obj.extract(wave[None],fresh=True)[0]
+                n=min(len(value),len(targets[name]))
+                row['ppg_js' if name=='ppg' else 'wavlm_distance']=float(obj.distances(targets[name][:n],value[:n]).mean())
+                if variant=='original':np.testing.assert_allclose(value,targets[name],atol=1e-4,rtol=0)
+            baseline_feature_rows.append(row)
     for row in records:
+        if row.get('execution_sources') not in [m['sources'],*m.get('source_history',[])]:
+            raise ValueError('Condition execution source is not recorded in source history')
         path=root/row['audio'];folder=path.parent
         if sha256_file(path)!=row['audio_sha256'] or sha256_file(folder/'result.npz')!=row['result_sha256']:
             raise ValueError('Waveform or result checksum changed')
@@ -128,18 +146,22 @@ def main():
         actual=metrics.character_errors(row['reference_text'],row['asr_text'])
         assert actual['character_errors']==int(row['character_errors'])
     comparisons=[]
-    for condition in ['before',*dict.fromkeys(r['condition'] for r in records)]:
-        feature_rows=m['baseline_features'] if condition=='before' else [r for r in records if r['condition']==condition]
+    for condition in ['before','original_ema','original',*dict.fromkeys(r['condition'] for r in records)]:
+        feature_rows=([r for r in baseline_feature_rows if r['condition']==condition]
+                      if condition in ('before','original_ema','original') else [r for r in records if r['condition']==condition])
         audio=next(r for r in m['audio_aggregates'] if r['condition']==condition)
         comparisons.append({'condition':condition,'utterances':len(feature_rows),
                             'wavlm_distance':float(np.mean([r['wavlm_distance'] for r in feature_rows])),
                             'ppg_js':float(np.mean([r['ppg_js'] for r in feature_rows])),
                             'cer':audio['cer'],'mcd_db':audio['mcd_db'],'stoi':audio['stoi']})
     save_csv(root/'comparison_summary.csv',comparisons)
+    save_csv(root/'baseline_feature_metrics.csv',baseline_feature_rows)
     verification={'conditions_checked':len(records),'delayed_decisions_checked':decisions,'coordinates_checked':coordinates,
                   'source_and_dependency_hashes_match':True,'baseline_waveforms_unchanged':True,
                   'cutoff_input_and_prefix_hashes_match':True,'committed_audio_immutable':True,
                   'non_feedback_bias_zero':True,'independently_reextracted_saved_features':True,
+                  'condition_execution_source_history_checked':True,
+                  'unedited_objective_pairs_byte_identical':unedited_pairs,
                   'max_absolute_saved_feature_error':max_feature_error,'max_absolute_cpu_token_replay_error':max_replay,
                   'verification_source_sha256':sha256_file(Path(__file__))}
     write_json(root/'verification.json',verification)
