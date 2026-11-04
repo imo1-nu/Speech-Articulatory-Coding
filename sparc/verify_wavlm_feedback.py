@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 from . import evaluate_generated_audio as metrics
-from .feedback_features import FeatureObjective
+from .feedback_features import FeatureObjective,FeatureObserver
 from .japanese_ppg import sha256_file
 from .local_ppg_search import transition_nll
 from .model_jsut_tokens import write_json
@@ -114,6 +114,7 @@ def main():
         else:
             assert len(trace)==len(tokens)
             forecasts=result['prediction_features'];biases=result['biases'];obj=objectives[row['objective']]
+            observer=FeatureObserver(obj)
             for i,item in enumerate(trace):
                 assert item['start_token']==i and item['decision_time_ms']==i*20
                 cutoff=max(0,i*320-960);assert item['information_cutoff_samples']==cutoff
@@ -121,6 +122,11 @@ def main():
                 if item['observer_input_samples']:
                     assert item['observer_input_samples']==cutoff
                     assert item['observer_input_sha256']==audio_hash(wave[:cutoff])
+                    prefix=obj.extract(wave[None,:cutoff],fresh=True)[0]
+                    observed=observer.update(prefix,forecasts,row['control']=='feedback')
+                    assert observed['observed_from_frame']==item['observed_from_frame']
+                    assert observed['observed_until_frame']==item['observed_until_frame']
+                np.testing.assert_allclose(observer.bias,biases[i],rtol=0,atol=1e-7)
                 assert item['prefix_sha256_before']==audio_hash(wave[:i*320])
                 assert item['prefix_sha256_before']==item['retained_prefix_sha256_after']
                 assert item['chunk_sha256']==audio_hash(wave[i*320:(i+1)*320])
@@ -137,6 +143,7 @@ def main():
             assert row['terminal_observation']['observation_time_ms']==len(tokens)*20+60
             if row['control']!='feedback':np.testing.assert_array_equal(biases,np.zeros_like(biases))
             if row['control']=='unedited':np.testing.assert_array_equal(tokens,original)
+            np.testing.assert_allclose(observer.observed,result['control_observed_features'],rtol=0,atol=1e-4)
         np.testing.assert_array_equal(replay_tokens,tokens)
     with (root/'audio_metrics.csv').open() as stream:audio_rows=list(csv.DictReader(stream))
     natural_rows=[];natural_references={}
@@ -183,6 +190,7 @@ def main():
                   'source_and_dependency_hashes_match':True,'baseline_waveforms_unchanged':True,
                   'cutoff_input_and_prefix_hashes_match':True,'committed_audio_immutable':True,
                   'non_feedback_bias_zero':True,'independently_reextracted_saved_features':True,
+                  'prefix_features_and_feedback_biases_replayed':True,
                   'condition_execution_source_history_checked':True,
                   'unedited_objective_pairs_byte_identical':unedited_pairs,
                   'max_absolute_saved_feature_error':max_feature_error,'max_absolute_cpu_token_replay_error':max_replay,
