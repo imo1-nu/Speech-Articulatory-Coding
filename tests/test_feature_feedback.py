@@ -1,5 +1,8 @@
 import unittest
+from collections import OrderedDict
+from types import SimpleNamespace
 import numpy as np
+import torch
 
 from sparc.feedback_features import FeatureObjective,FeatureObserver
 from sparc.feature_feedback_search import optimize,delayed
@@ -13,6 +16,33 @@ def objective(name='wavlm',dim=2):
 
 
 class FeatureFeedbackTest(unittest.TestCase):
+    def test_wavlm_preprocessing_and_fresh_extraction_bypass_cache(self):
+        obj=objective('wavlm',1024);obj.device='cpu';obj.cache=OrderedDict();obj.calls=0;obj.seconds=0.
+        captured=[]
+        def model(tensor,**kwargs):
+            captured.append(tensor.clone())
+            count=(tensor.shape[1]-400)//320+1
+            values=tensor[:,:count,None].repeat(1,1,1024)
+            return SimpleNamespace(hidden_states=[None]*9+[values])
+        obj.model=model
+        audio=np.linspace(-.2,.4,640,dtype=np.float32)[None]
+        first=obj.extract(audio)
+        obj.extract(audio)
+        self.assertEqual(len(captured),1)
+        obj.extract(audio,fresh=True)
+        self.assertEqual(len(captured),2)
+        norm=audio.astype(np.float64);norm=((norm-norm.mean(1,keepdims=True))/norm.std(1,keepdims=True)).astype(np.float32)
+        np.testing.assert_array_equal(captured[0].numpy(),np.pad(norm,((0,0),(160,160))))
+        self.assertEqual(first.shape,(1,2,1024))
+
+    def test_arrived_features_are_frozen_when_prefix_is_recomputed(self):
+        obj=objective();observer=FeatureObserver(obj)
+        predicted=np.array([[1.,0.],[1.,0.]])
+        observer.update(np.array([[0.,1.]]),predicted,True)
+        observer.update(np.array([[9.,9.],[.5,.5]]),predicted,True)
+        np.testing.assert_array_equal(observer.observed[0],[0,1])
+        np.testing.assert_array_equal(observer.observed[1],[.5,.5])
+
     def test_cosine_is_scale_invariant_and_zero_safe(self):
         obj=objective()
         np.testing.assert_allclose(obj.distances(np.eye(2),3*np.eye(2)),0)

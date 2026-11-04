@@ -15,12 +15,15 @@ bash scripts/wavlm_feedback_experiment.sh --objective wavlm --mode delayed --hor
   --utterances BASIC5000_0050 --output-dir outputs/jsut_wavlm_feedback_single
 # 同じコード・引数・入力で未完了の比較を再開する場合
 bash scripts/wavlm_feedback_experiment.sh --resume
+# 完了後：保存音声・全探索履歴・観測制限・トークン復号を独立検証
+uv run --no-project --python "$HOME/.local/share/sparc/venv/bin/python" -m sparc.verify_wavlm_feedback
 ```
 
 WavLM-largeのrevision `c1423ed94bb01d80a3f5ce5bc39f6026a0f4828c`、`hidden_states[9]`の1024次元を使う。
 SPARCと同じ左右160サンプルのゼロ埋めと、float64母平均・母標準偏差による波形標準化後のfloat32入力。
 10 Hz平滑化と線形射影は適用しない。主距離は各フレームL2正規化後のcosine距離、raw MSEも診断用に保存する。
-候補と目標は同じ16 kHz波形読み込みを用い、フレーム時刻はCNNの400サンプル受容野と320サンプルstrideから
+候補と目標は既存評価と同じ16 kHz波形読み込み（必要ならtorchaudioでリサンプリング）を用い、
+フレーム時刻はCNNの400サンプル受容野と320サンプルstrideから
 `(320*i+39.5)/16000`で対応付ける。PPGの100 Hz・5 msオフセットと混同しない。
 
 元音声を目標とし、既存RVQ8の同じ5発話で比較する。全8段を編集し、罰則は1段目の遷移NLLだけ。
