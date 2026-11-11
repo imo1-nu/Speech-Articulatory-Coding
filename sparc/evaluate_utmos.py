@@ -140,6 +140,19 @@ def enrich_report(path,aggregates,audio_aggregates):
     page=path.read_text(encoding='utf-8')
     page=re.sub(re.escape(MARKER_BEGIN)+r'.*?'+re.escape(MARKER_END),'',page,flags=re.S)
     audio={r['condition']:r for r in audio_aggregates}
+    scores={r['condition']:r['utmos_mean'] for r in aggregates}
+    def extend_audio_table(match):
+        body=re.sub(r'<t[hd] class="utmos-cell">.*?</t[hd]>','',match.group(2),flags=re.S)
+        def extend_row(row_match):
+            row=row_match.group(1)
+            if '<th>' in row:return '<tr>'+row+'<th class="utmos-cell">UTMOS ↑</th></tr>'
+            label=re.search(r'<td>(.*?)</td>',row)
+            if label is None:return row_match.group(0)
+            condition=html.unescape(label.group(1))
+            if condition not in scores:raise ValueError('Report contains an unscored audio condition')
+            return '<tr>'+row+f'<td class="utmos-cell">{scores[condition]:.3f}</td></tr>'
+        return match.group(1)+re.sub(r'<tr>(.*?)</tr>',extend_row,body,flags=re.S)+match.group(3)
+    page=re.sub(r'(<h2>音声指標</h2><table>)(.*?)(</table>)',extend_audio_table,page,flags=re.S)
     table=''
     for row in aggregates:
         deviation='—' if row['utmos_std'] is None else f'{row["utmos_std"]:.3f}'

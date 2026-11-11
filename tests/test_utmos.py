@@ -63,13 +63,17 @@ class UTMOSTest(unittest.TestCase):
     def test_report_injection_is_idempotent_and_preserves_existing_verification(self):
         with tempfile.TemporaryDirectory() as temporary:
             path=Path(temporary)/'index.html'
-            path.write_text('<html><p id="verification-summary">checked</p><h2>特徴量・計算時間</h2></html>')
+            path.write_text('<html><p id="verification-summary">checked</p><h2>特徴量・計算時間</h2>'
+                            '<h2>音声指標</h2><table><tr><th>条件</th><th>CER</th></tr>'
+                            '<tr><td>x</td><td>10.00</td></tr></table></html>')
             values=aggregate_utmos([{'condition':'x','utmos':3.}])
             enrich_report(path,values,[{'condition':'x','cer':'.1'}]);first=path.read_text()
             enrich_report(path,values,[{'condition':'x','cer':'.1'}])
             self.assertEqual(path.read_text(),first)
             self.assertIn('<p id="verification-summary">checked</p>',first)
             self.assertEqual(first.count('id="utmos-evaluation"'),1)
+            self.assertEqual(first.count('class="utmos-cell"'),2)
+            self.assertIn('<td>10.00</td>',first)
 
 
 if __name__=='__main__':unittest.main()
