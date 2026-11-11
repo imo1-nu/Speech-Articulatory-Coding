@@ -136,6 +136,7 @@ def write_report(output, manifest, rows):
 FBなしも候補音声を生成して目標距離を評価します。FBありは出力と発行時予測の特徴量差で予測を補正します。
 元音声の目標特徴量は全体が事前に利用可能です。WavLMは接頭辞への適用で、厳密な因果モデルではありません。</p>
 <p>MCD/STOI参照は元軌道合成、CERはWhisper large-v3と正解文。<a href="manifest.json">設定・記録</a> / <a href="feature_metrics.csv">特徴量CSV</a></p>
+<p>CERは挿入誤りを含むため100%を超える場合があります。固定条件の長い反復認識は、全文の認識結果と併せて確認してください。</p>
 <h2>WavLM距離（発話平均）</h2><table><tr><th>条件</th><th>発話数</th><th>距離 ↓</th></tr>'''
     page += features+'</table><h2>音声指標（音響参照：元軌道合成）</h2><table><tr><th>条件</th><th>発話数</th><th>CER % ↓</th><th>MCD dB ↓</th><th>STOI ↑</th></tr>'+table+'</table>'+''.join(cards)
     page += "<script>document.querySelectorAll('audio').forEach(p=>p.onplay=()=>document.querySelectorAll('audio').forEach(q=>{if(q!==p)q.pause()}));</script></html>"
