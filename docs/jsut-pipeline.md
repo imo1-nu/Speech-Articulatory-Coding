@@ -5,6 +5,39 @@
 コマンドはリポジトリのルートで実行する。以下の`outputs/`はローカル成果物で、Gitには含めない。
 主な研究条件は40 ms・128コード・50 Hzだが、CLIの既存の既定値は変更していない。
 
+## UTMOSによる追加評価
+
+```sh
+# WavLM/PPG比較の保存済み75音声を採点し、試聴レポートにUTMOS列と集計を追加
+bash scripts/evaluate_utmos.sh
+# モデルの取得・照合だけを先に行う場合
+bash scripts/evaluate_utmos.sh --prepare-only
+# 別の再構成比較に適用する例
+bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_rvq/comparison_verified
+```
+
+UTMOS22 strongのSpeechMOS推論実装v1.2.0、commit `ed25eacbfa42b99156c36ebec67a733b5dbb9b79`を使う。
+[公式UTMOS22](https://github.com/sarulab-speech/UTMOS22)の学習済みモデルに由来する
+[SpeechMOS](https://github.com/tarepan/SpeechMOS/tree/ed25eacbfa42b99156c36ebec67a733b5dbb9b79)版で、
+UTMOSの全アンサンブルやUTMOSv2とは区別する。追加のfairseq環境は不要で、既存のtorch・torchaudio環境を使う。
+
+初回は `.cache/utmos/` にソースと約392 MiBの重みを取得し、固定commitと重みSHA256を照合する。
+重みは `utmos22_strong_step7459_v1.pt`、SHA256は
+`38aa51ab79e2a4e09a1449758a4b37e9cbb2e8235a49662a732d33a9ba1e9bff`。
+`--device cpu` も指定できる。モデルとライブラリ版・前処理・deviceが一致する既存スコアは波形ハッシュで再利用する。
+
+評価入力は既存の `audio_metrics.csv` とmanifestから列挙し、保存音声のハッシュを確認する。
+全発話をモノラル・16 kHzに統一し、1発話ずつ評価する。追加の音量正規化・無音除去・切り詰め・長さパディングは行わない。
+公開モデルが返すスコアをそのまま使い、追加のスケーリングや1〜5へのクリップはしない。
+条件ごとの平均は発話を等重みとし、標準偏差は標本標準偏差（ddof=1）。予測スコアであり、人によるMOSではない。
+日本語・今回の合成方式での聴感との対応は、聴取比較と併用して判断する。
+
+保存先は対象比較の `utmos/`。`metrics.csv` は発話別、`aggregates.csv` は条件別集計、
+`*_with_utmos.csv` はCER・MCD・STOI等へUTMOSを結合した表。
+既存の音声・主要CSV・manifest・検証記録を保持し、追加評価を別ファイルで保存する。
+`index.html` の音声指標表にUTMOS列を追加し、平均・標準偏差とモデル情報のセクションも追加する。
+レポートを再生成した場合は同じコマンドで追加表示を復元でき、スコアが有効ならモデル推論は省略される。
+
 ## WavLM特徴量を目標とするRVQ制御
 
 ```sh

@@ -43,6 +43,7 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 | 固定連続AEのRVQ・128コード×1/2/4/8段 | 完了 | [音声・カ行候補の比較](../outputs/jsut_rvq/comparison_verified/index.html) | [RVQ手順](../docs/jsut-pipeline.md#固定した連続aeへのrvq) |
 | RVQ8・1段目のみ遷移ソフト制約 | 完了 | [音声と探索結果](../outputs/jsut_rvq_first_stage_transition/index.html) | [実行手順](../docs/jsut-pipeline.md#rvqの1段目に遷移ソフト制約を加えた局所探索) |
 | WavLM特徴量／PPG目標の一括・遅延FB | 完了 | [60条件の試聴と評価](../outputs/jsut_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#wavlm特徴量を目標とするrvq制御) |
+| 保存音声へのUTMOS22 strong追加評価 | 完了 | [UTMOS集計と試聴](../outputs/jsut_wavlm_feedback/index.html#utmos-evaluation) | [実行手順](../docs/jsut-pipeline.md#utmosによる追加評価) |
 | JSUT抽出スモークテスト | スモーク | [outputs/jsut_smoke](../outputs/jsut_smoke) | [scripts/extract_jsut.sh](../scripts/extract_jsut.sh) |
 | VQスモークテスト | スモーク | [outputs/jsut_tokens_smoke](../outputs/jsut_tokens_smoke) | [scripts/model_jsut_tokens.sh](../scripts/model_jsut_tokens.sh) |
 | 復号条件修正前の試聴出力 | 置換済み | [outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights](../outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights) | [scripts/compare_jsut_audio.sh](../scripts/compare_jsut_audio.sh) |
@@ -363,6 +364,42 @@ CSVの共通列処理を修正して再開した履歴を保存し、検索・�
 全観測接頭辞から特徴量とFBバイアスを再生した。保存WAVの特徴量の最大絶対差は0、CPUトークン再復号の軌道差は最大1.20×10⁻⁶未満。
 両目標の逐次無編集音声は5発話すべてバイト単位で一致した。候補評価は1,098,737回、条件ごとの計算時間の合計は約82.7分
 （RTX 5090、CUDA 12.8、初期化・ASR・独立検証は別）。詳細は比較レポート・manifest・verification・比較CSVを参照。
+
+### UTMOS22 strongの追加評価
+
+作業ブランチ `research/utmos-evaluation` はmainから作成し、検証済みのWavLM比較ブランチをfast-forwardで取り込んだ。
+保存済み75音声（15条件×5発話、波形ハッシュで70種類）に、参照不要のUTMOS22 strong予測を追加した。
+SpeechMOS v1.2.0の固定commitと固定SHA256の重みを使用。16 kHz・モノラル・1発話ずつで、
+追加の音量正規化・無音除去・外部パディングなし、スコアの再スケーリングやクリップなし。
+数値はモデルによる予測であり、聴取者によるMOSやUTMOSの全アンサンブル、UTMOSv2とは区別する。
+
+| 条件 | UTMOS平均 ↑ | 標本標準偏差 | CER % ↓ |
+|---|---:|---:|---:|
+| 元音声 | 4.012 | 0.260 | 9.09 |
+| 元軌道合成 | 3.376 | 0.335 | 14.14 |
+| 編集前RVQ8 | 3.542 | 0.316 | 15.15 |
+| 一括・PPG λ=0 | 3.164 | 0.388 | 13.13 |
+| 一括・PPG λ=0.03 | 3.169 | 0.388 | 14.14 |
+| 一括・PPG λ=0.1 | 3.276 | 0.327 | 17.17 |
+| 一括・WavLM λ=0 | 3.682 | 0.294 | 10.10 |
+| 一括・WavLM λ=0.03 | 3.635 | 0.351 | 15.15 |
+| 一括・WavLM λ=0.1 | 3.725 | 0.329 | 14.14 |
+| 逐次・無編集（両目標共通） | 3.542 | 0.317 | 15.15 |
+| 逐次・PPG・補正なし | 2.070 | 0.334 | 76.77 |
+| 逐次・PPG・FBあり | 2.099 | 0.182 | 68.69 |
+| 逐次・WavLM・補正なし | 3.685 | 0.321 | 15.15 |
+| 逐次・WavLM・FBあり | 3.414 | 0.314 | 21.21 |
+
+条件平均は5発話の等重み、標準偏差はddof=1。CERとUTMOSは別の属性を測り、順位も一致しない。
+今回の平均ではWavLM目標の方がPPG目標よりUTMOSが高い。逐次WavLMへのFB追加は、補正なしよりUTMOSも低下した。
+元軌道合成よりトークン化後の予測値が高くても、元軌道の物理的正確さが高まったとは解釈しない。
+日本語5発話の補助評価で、一般的な自然さの優劣や人のMOS評点に直接置き換えない。
+
+発話別CSV・条件別CSV・既存音声指標との結合CSV・モデル版と前処理は `outputs/jsut_wavlm_feedback/utmos/` に保存。
+基の音声・CSV・manifest・独立検証記録のハッシュは維持した。
+公開torch.hubインターフェースを独立にロードして70波形すべてを再推論し、75行のスコア差は最大0だった。
+キャッシュ再実行は新規推論0回で平均・標準偏差が一致し、レポート再適用で列とセクションが重複しないことも確認した。
+全99テストが成功し、表への列追加後にもUTMOSの5テストを再確認した。
 
 ## 旧実験と保全した履歴
 

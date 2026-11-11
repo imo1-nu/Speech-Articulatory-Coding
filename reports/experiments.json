@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261104T061218Z",
+  "generated_at_utc": "20261111T050229Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -114,6 +114,23 @@
         "scripts/train_continuous_ae.sh",
         "scripts/compare_trajectory_reconstruction.sh",
         "tests/test_reconstruction_ablation.py"
+      ]
+    },
+    {
+      "commit": "1b41391",
+      "title": "feat: add pinned UTMOS22 strong evaluation for saved speech",
+      "files": [
+        "sparc/evaluate_utmos.py",
+        "scripts/evaluate_utmos.sh",
+        "tests/test_utmos.py"
+      ]
+    },
+    {
+      "commit": "7db7235",
+      "title": "feat: include UTMOS alongside existing report audio metrics",
+      "files": [
+        "sparc/evaluate_utmos.py",
+        "tests/test_utmos.py"
       ]
     }
   ],
@@ -4364,6 +4381,240 @@
         {
           "path": "outputs/jsut_wavlm_feedback_validation/tests.log",
           "sha256": "064ebf3892bdfa929d72daf3eb2f6341c4b31f9028a8852de2f9b943613612d4"
+        }
+      ]
+    },
+    {
+      "id": "utmos-evaluation",
+      "status": "complete",
+      "branch": "research/utmos-evaluation",
+      "depends_on": [
+        "wavlm-feature-feedback"
+      ],
+      "run_dir": "outputs/jsut_wavlm_feedback/utmos",
+      "report": "outputs/jsut_wavlm_feedback/index.html#utmos-evaluation",
+      "entrypoint": "scripts/evaluate_utmos.sh",
+      "reproduction_command": "bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_wavlm_feedback",
+      "supporting_implementation_commits": [
+        "1b41391",
+        "7db7235"
+      ],
+      "model": {
+        "model": "UTMOS22 strong / SpeechMOS",
+        "repository": "https://github.com/tarepan/SpeechMOS.git",
+        "revision": "ed25eacbfa42b99156c36ebec67a733b5dbb9b79",
+        "source_hashes": {
+          "hubconf.py": "6720a77483b46844b8652ce47271339536edc45055feed76749278bd96cc5c14",
+          "hubconf_test.py": "8b37e61a54e4a41741f93fce56f2ea198166b2cab791b55448b6e4d2b7ea3331",
+          "speechmos/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/fairseq_alt.py": "a554d47bebef0eb764a048d58dbb7e1e1fca316d627c571add54faa42fe5f45b",
+          "speechmos/utmos22/strong/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/strong/model.py": "bffb8eba14e74e4f228684280cbd295ecffbfcd0414a5a460ca55c94f2f0a0e4",
+          "speechmos/utmos22/strong/model_test.py": "0bfe63b9ff9875a90c9ec2475837f9b44890566a68c685b9c7230f4411518041"
+        },
+        "weights_url": "https://github.com/tarepan/SpeechMOS/releases/download/v1.0.0/utmos22_strong_step7459_v1.pt",
+        "weights_sha256": "38aa51ab79e2a4e09a1449758a4b37e9cbb2e8235a49662a732d33a9ba1e9bff",
+        "scoring_policy": "full_clip_mono_16khz_single_no_extra_normalization_no_trim_no_clamp_v1",
+        "device": "cuda",
+        "packages": {
+          "torch": "2.8.0+cu128",
+          "torchaudio": "2.8.0+cu128",
+          "numpy": "1.26.4",
+          "soundfile": "0.13.1"
+        },
+        "audio_loader_sha256": "a39a786475f1dd21ef5634786a3aac2c0afbc7b394a5a0e726869a1019d5aa2d"
+      },
+      "aggregation": "equal utterance mean; sample standard deviation ddof=1; no score clipping",
+      "input_rows": 75,
+      "unique_waveforms": 70,
+      "aggregates": [
+        {
+          "condition": "original",
+          "utmos_utterances": 5,
+          "utmos_mean": 4.012296199798584,
+          "utmos_std": 0.2601871464749153,
+          "utmos_min": 3.6742405891418457,
+          "utmos_max": 4.281228065490723
+        },
+        {
+          "condition": "original_ema",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.3760855197906494,
+          "utmos_std": 0.3348284421950122,
+          "utmos_min": 2.972008466720581,
+          "utmos_max": 3.7310476303100586
+        },
+        {
+          "condition": "before",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.541952657699585,
+          "utmos_std": 0.3159183616531942,
+          "utmos_min": 3.216421127319336,
+          "utmos_max": 3.909550666809082
+        },
+        {
+          "condition": "offline_ppg_lambda_0",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.164009761810303,
+          "utmos_std": 0.38804188004404905,
+          "utmos_min": 2.7826082706451416,
+          "utmos_max": 3.6078600883483887
+        },
+        {
+          "condition": "offline_ppg_lambda_0.03",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.1686897754669188,
+          "utmos_std": 0.3878099051452804,
+          "utmos_min": 2.828799247741699,
+          "utmos_max": 3.599224328994751
+        },
+        {
+          "condition": "offline_ppg_lambda_0.1",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.275551414489746,
+          "utmos_std": 0.3270409996149977,
+          "utmos_min": 3.02146053314209,
+          "utmos_max": 3.8389732837677
+        },
+        {
+          "condition": "offline_wavlm_lambda_0",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.6818668365478517,
+          "utmos_std": 0.29435060668457147,
+          "utmos_min": 3.2648086547851562,
+          "utmos_max": 4.034375190734863
+        },
+        {
+          "condition": "offline_wavlm_lambda_0.03",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.6351433753967286,
+          "utmos_std": 0.35121486759936754,
+          "utmos_min": 3.206955671310425,
+          "utmos_max": 4.0303239822387695
+        },
+        {
+          "condition": "offline_wavlm_lambda_0.1",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.7253231048583983,
+          "utmos_std": 0.3286474931273399,
+          "utmos_min": 3.2872049808502197,
+          "utmos_max": 4.068420886993408
+        },
+        {
+          "condition": "delayed_ppg_unedited_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.54184308052063,
+          "utmos_std": 0.31669094198491493,
+          "utmos_min": 3.2118139266967773,
+          "utmos_max": 3.913127899169922
+        },
+        {
+          "condition": "delayed_ppg_no_feedback_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 2.0697503089904785,
+          "utmos_std": 0.33441579485411704,
+          "utmos_min": 1.7298357486724854,
+          "utmos_max": 2.4544756412506104
+        },
+        {
+          "condition": "delayed_ppg_feedback_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 2.0987889051437376,
+          "utmos_std": 0.18248742963444814,
+          "utmos_min": 1.7757569551467896,
+          "utmos_max": 2.204620361328125
+        },
+        {
+          "condition": "delayed_wavlm_unedited_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.54184308052063,
+          "utmos_std": 0.31669094198491493,
+          "utmos_min": 3.2118139266967773,
+          "utmos_max": 3.913127899169922
+        },
+        {
+          "condition": "delayed_wavlm_no_feedback_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.6850594520568847,
+          "utmos_std": 0.32111860187094476,
+          "utmos_min": 3.154015064239502,
+          "utmos_max": 4.018357276916504
+        },
+        {
+          "condition": "delayed_wavlm_feedback_h400",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.413591909408569,
+          "utmos_std": 0.31445350819071355,
+          "utmos_min": 3.0227367877960205,
+          "utmos_max": 3.78550386428833
+        }
+      ],
+      "verification": {
+        "reference": "torch.hub local SpeechMOS utmos22_strong(pretrained=False), strict pinned state_dict load",
+        "rows_checked": 75,
+        "unique_waveforms_reinferred": 70,
+        "maximum_absolute_score_error": 0.0,
+        "all_input_waveform_hashes_match_base_metrics": true,
+        "scores_unclipped": true,
+        "initial_metrics_sha256": "5df46db8a491778fbf8ff80b9680cd50f927f028c8fc4d1010c4fd772c4f7746",
+        "cached_run_new_inferences": 0,
+        "cached_aggregates_identical": true,
+        "base_evidence_hashes_unchanged": 17,
+        "html_utmos_sections": 1,
+        "html_primary_table_utmos_cells": 16,
+        "evaluation_source_sha256": "73afc9992c514454c3f34ded8097e59e2a3b8d778056bce83761e232350cb7e5",
+        "unit_tests_passed": 99,
+        "focused_tests_after_report_column_change_passed": 5
+      },
+      "evidence": [
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/aggregates.csv",
+          "sha256": "c9189d8bc2c26b9fa11557e3e969489295c88b3f8ceb38dc205f47172170ce5c"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/audio_aggregates_natural_reference_with_utmos.csv",
+          "sha256": "433ccccb02ff63b6980525d27304360eedff13919f9ea32f9d55424ca937a924"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/audio_aggregates_with_utmos.csv",
+          "sha256": "fcf079ecd9bebae924f41a2318f5ef7ebcdaf6be6a8a6ad4863464add9f99ded"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/audio_metrics_with_utmos.csv",
+          "sha256": "4bedc8940f1acf9d3a0c9fa3948432fbb88ac57bb008a2cbc0d813dc3ef2b2ae"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/comparison_summary_natural_reference_with_utmos.csv",
+          "sha256": "d0adf3d8bb7c42d077c9a352892f57a8b1112d0e57c1409b38347c62cf971669"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/comparison_summary_with_utmos.csv",
+          "sha256": "515262ff5836f24b37b100d2ec63c936c047a429092f40643d508f72ec879d66"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/initial_manifest.json",
+          "sha256": "97944fff1888ce6cf289c1bd26df2ca2059710c2f82592e4a388160ec328b056"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/initial_metrics.csv",
+          "sha256": "5df46db8a491778fbf8ff80b9680cd50f927f028c8fc4d1010c4fd772c4f7746"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/manifest.json",
+          "sha256": "c0ed4c57e4ec985bc0ce65fefffc9b61c9d8a9226a5d841a6d66cf4032f05a69"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/metrics.csv",
+          "sha256": "9b8df5b682bc0591c0a39342a5e1ebcd307ccf2a68561cb6be5ad8782fc8af6b"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/tests.log",
+          "sha256": "c8152b81149ba382fb589ed6154112f9007498e1401646d4239bcd757a33392f"
+        },
+        {
+          "path": "outputs/jsut_wavlm_feedback/utmos/verification.json",
+          "sha256": "0fe02c24cdeea3e1ba8a296bcf3fc1618184717b4902d8273a7dec7084d978a7"
         }
       ]
     }
