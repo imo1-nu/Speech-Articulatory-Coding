@@ -14,6 +14,8 @@ bash scripts/held_start_feedback.sh
 bash scripts/held_start_feedback.sh --resume
 # 1発話だけを別ディレクトリで実行
 bash scripts/held_start_feedback.sh --utterances BASIC5000_0006 --output-dir outputs/held_start_single
+# 完了後、保存波形から全観測接頭辞とFB補正を独立に再計算
+bash scripts/verify_held_start_feedback.sh
 ```
 
 `outputs/jsut_held_start_wavlm_feedback/index.html` に試聴音声と軌道を保存する。
