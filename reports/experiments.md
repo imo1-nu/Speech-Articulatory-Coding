@@ -44,6 +44,7 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 | RVQ8・1段目のみ遷移ソフト制約 | 完了 | [音声と探索結果](../outputs/jsut_rvq_first_stage_transition/index.html) | [実行手順](../docs/jsut-pipeline.md#rvqの1段目に遷移ソフト制約を加えた局所探索) |
 | WavLM特徴量／PPG目標の一括・遅延FB | 完了 | [60条件の試聴と評価](../outputs/jsut_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#wavlm特徴量を目標とするrvq制御) |
 | 保存音声へのUTMOS22 strong追加評価 | 完了 | [UTMOS集計と試聴](../outputs/jsut_wavlm_feedback/index.html#utmos-evaluation) | [実行手順](../docs/jsut-pipeline.md#utmosによる追加評価) |
+| 初期調音位置固定からのWavLM逐次制御 | 完了 | [固定・FBなし・FBありの試聴](../outputs/jsut_held_start_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#初期調音位置を保持した状態からのwavlm制御) |
 | JSUT抽出スモークテスト | スモーク | [outputs/jsut_smoke](../outputs/jsut_smoke) | [scripts/extract_jsut.sh](../scripts/extract_jsut.sh) |
 | VQスモークテスト | スモーク | [outputs/jsut_tokens_smoke](../outputs/jsut_tokens_smoke) | [scripts/model_jsut_tokens.sh](../scripts/model_jsut_tokens.sh) |
 | 復号条件修正前の試聴出力 | 置換済み | [outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights](../outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights) | [scripts/compare_jsut_audio.sh](../scripts/compare_jsut_audio.sh) |
@@ -400,6 +401,47 @@ SpeechMOS v1.2.0の固定commitと固定SHA256の重みを使用。16 kHz・モ�
 公開torch.hubインターフェースを独立にロードして70波形すべてを再推論し、75行のスコア差は最大0だった。
 キャッシュ再実行は新規推論0回で平均・標準偏差が一致し、レポート再適用で列とセクションが重複しないことも確認した。
 全99テストが成功し、表への列追加後にもUTMOSの5テストを再確認した。
+
+### 初期位置固定からのWavLM逐次制御
+
+作業ブランチ `research/held-start-wavlm-feedback` はmainから新規作成し、検証済みUTMOS/WavLM実装をfast-forwardで引き継いだ。
+探索実行版は `53b15a1`。その後の表示変更は参照音声の見出しとCER解釈の説明のみで、実行版のソースハッシュを保持した。
+従来と同じテスト5発話・正解99文字で、全12調音座標を抽出軌道の第0フレームに固定した。
+この一定位置の窓だけをAE/RVQ8で符号化し、同じ8段のコード組を全時刻へ繰り返したものを編集初期値にした。
+元の動的軌道のトークンは使わず、元音声のWavLM-large hidden_states[9]を目標とする。
+F0・音量・話者・合成ゲインは元の値を保持し、発声タイミング・抑揚は与える。
+
+40 ms窓・50 Hz・RVQ128×8、20 ms更新・60 ms観測遅延・400 ms探索窓、各段2位置を1パス。
+全8段を編集し、1段目遷移NLL重み0.03、12近傍＋4広域候補、バッチ4は従来通り。
+FBなしも候補合成に基づく逐次最適化を行い、FBありだけが出力と発行時予測の特徴量差を予測補正へ戻す。
+目標音声の特徴量は事前に全体が既知であり、接頭辞WavLMは非因果モデルの近似適用である。
+
+| 条件 | WavLM距離 ↓ | CER % ↓ | MCD dB ↓ | STOI ↑ | UTMOS ↑ |
+|---|---:|---:|---:|---:|---:|
+| 元音声 | 0.00000 | 9.09 | 6.7636 | 0.8401 | 4.012 |
+| 元軌道合成 | 0.19869 | 14.14 | 0.0000 | 1.0000 | 3.376 |
+| 通常RVQ8再構成 | 0.20234 | 15.15 | 2.3156 | 0.9840 | 3.542 |
+| 最初の位置を厳密に固定 | 0.50805 | 570.71 | 9.2282 | 0.6238 | 1.736 |
+| 固定軌道をRVQ8で再構成 | 0.50542 | 570.71 | 9.2665 | 0.6361 | 1.725 |
+| 逐次・固定トークンのまま | 0.50593 | 570.71 | 9.2658 | 0.6361 | 1.724 |
+| 固定初期値・WavLM・FBなし | 0.24624 | 64.65 | 6.8516 | 0.7737 | 2.837 |
+| 固定初期値・WavLM・FBあり | 0.26790 | 59.60 | 7.2273 | 0.7574 | 3.023 |
+
+WavLM距離とUTMOSは発話の等重み平均、CERは99文字のmicro集計。MCD/STOI参照は元軌道合成。
+固定条件ではBASIC5000_0053と0066の認識が長い反復出力となり、挿入誤りでCERが100%を超える。
+570.71%はクリップしていない実際のCERで、認識全文と挿入・削除・置換数も発話別CSVに保持した。
+音声の明瞭性を単独のCER値だけで判断しない。
+
+固定状態から編集すると語の回復が見られ、FB追加で集計CERは64/99から59/99誤りへ、UTMOS平均は2.837から3.023へ改善した。
+ただしFBのCER改善は2発話、悪化は2発話、同値は1発話。WavLM距離・元軌道合成参照のMCD/STOIはFBなしより悪い。
+通常RVQ8再構成のCER15.15%・UTMOS3.542には達せず、初期位置固定からの回復は部分的である。
+この結果は既存方式の5発話での比較であり、FB一般の優位性や元の調音動作の一意な回復を示すものではない。
+
+保存先は `outputs/jsut_held_start_wavlm_feedback/`。8条件×5発話の40音声、初期化・編集後軌道・トークン・発声条件・観測・補正・履歴と軌道図を保存した。
+全101テストが成功。保存波形から2,511接頭辞を独立再抽出し、2,571制御更新と15,234採用編集を再生した。
+保存WavLM特徴量・観測特徴量・FB補正・復号軌道・距離の最大差はすべて0だった。
+UTMOSの再表示はキャッシュからの新規推論0回で集計が一致した。
+探索条件の実測時間合計は約41.6分（初期発話の診断評価の併走を含み、最終ASR・UTMOS・独立検証は別）。
 
 ## 旧実験と保全した履歴
 

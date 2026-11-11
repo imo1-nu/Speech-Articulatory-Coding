@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261111T050229Z",
+  "generated_at_utc": "20261111T073509Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -131,6 +131,22 @@
       "files": [
         "sparc/evaluate_utmos.py",
         "tests/test_utmos.py"
+      ]
+    },
+    {
+      "commit": "53b15a1",
+      "title": "feat: synthesize delayed WavLM feedback from held initial articulation",
+      "files": [
+        "sparc/held_start_feedback.py",
+        "scripts/held_start_feedback.sh",
+        "tests/test_held_start_feedback.py"
+      ]
+    },
+    {
+      "commit": "86e511f",
+      "title": "test: verify held-start control from saved audio prefixes",
+      "files": [
+        "sparc/verify_held_start_feedback.py"
       ]
     }
   ],
@@ -4615,6 +4631,390 @@
         {
           "path": "outputs/jsut_wavlm_feedback/utmos/verification.json",
           "sha256": "0fe02c24cdeea3e1ba8a296bcf3fc1618184717b4902d8273a7dec7084d978a7"
+        }
+      ]
+    },
+    {
+      "id": "held-start-wavlm-feedback",
+      "status": "complete",
+      "branch": "research/held-start-wavlm-feedback",
+      "source_commit": "53b15a143e4f3a8526873b95e6c09abbb18674d0",
+      "supporting_implementation_commits": [
+        "53b15a1",
+        "86e511f",
+        "652254e",
+        "cfae9de",
+        "65a2f52"
+      ],
+      "depends_on": [
+        "wavlm-feature-feedback",
+        "utmos-evaluation"
+      ],
+      "run_dir": "outputs/jsut_held_start_wavlm_feedback",
+      "report": "outputs/jsut_held_start_wavlm_feedback/index.html",
+      "entrypoint": "scripts/held_start_feedback.sh",
+      "reproduction_command": "bash scripts/held_start_feedback.sh --output-dir outputs/jsut_held_start_wavlm_feedback_reproduced",
+      "verification_command": "bash scripts/verify_held_start_feedback.sh",
+      "settings": {
+        "output_dir": "outputs/jsut_held_start_wavlm_feedback",
+        "utterances": null,
+        "device": "cuda",
+        "initial_position_frame": 0,
+        "horizon_ms": 400,
+        "step_ms": 20,
+        "delay_ms": 60,
+        "transition_weight": 0.03
+      },
+      "initialization": "all 12 coordinates held at first extracted frame; repeated RVQ code tuple; original F0/loudness/speaker/gain retained",
+      "feature": {
+        "model": "microsoft/wavlm-large",
+        "revision": "c1423ed94bb01d80a3f5ce5bc39f6026a0f4828c",
+        "weights_sha256": "fdee460e529396ddb2f8c8e8ce0ad74cfb747b726bc6f612e666c7c1e1963c9d",
+        "hidden_state_index": 9,
+        "lowpass_hz": null,
+        "normalize_waveform": true,
+        "zero_pad_samples": 160,
+        "metric": "mean framewise cosine distance",
+        "precision": "float32",
+        "waveform_statistics": "float64 population mean/std, then float32",
+        "frame_stride_samples": 320,
+        "frame_center_offset_samples": 39.5,
+        "receptive_field_samples": 400
+      },
+      "audio_conditions": 8,
+      "utterances": 5,
+      "audio_files": 40,
+      "audio_metric_reference": "original_ema",
+      "cer_reference": "JSUT transcript; Whisper-large-v3; 99 normalized characters",
+      "asr_model": "openai/whisper-large-v3",
+      "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+      "asr_settings": {
+        "language": "ja",
+        "task": "transcribe",
+        "num_beams": 1,
+        "do_sample": false,
+        "max_new_tokens": 256,
+        "prompt": null
+      },
+      "audio_aggregates": [
+        {
+          "condition": "original",
+          "utterances": "5",
+          "cer": "0.09090909090909091",
+          "character_errors": "9.0",
+          "reference_characters": "99.0",
+          "mcd_db": "6.763565988377051",
+          "stoi": "0.8400675246717586",
+          "f0_rmse_hz": "9.123694812525127",
+          "f0_rmse_cents": "73.58450166625559",
+          "vuv_error_rate": "0.07969749854566609"
+        },
+        {
+          "condition": "original_ema",
+          "utterances": "5",
+          "cer": "0.1414141414141414",
+          "character_errors": "14.0",
+          "reference_characters": "99.0",
+          "mcd_db": "0.0",
+          "stoi": "0.9999999999999994",
+          "f0_rmse_hz": "0.0",
+          "f0_rmse_cents": "0.0",
+          "vuv_error_rate": "0.0"
+        },
+        {
+          "condition": "normal_rvq",
+          "utterances": "5",
+          "cer": "0.15151515151515152",
+          "character_errors": "15.0",
+          "reference_characters": "99.0",
+          "mcd_db": "2.3156064322630376",
+          "stoi": "0.9840210398534737",
+          "f0_rmse_hz": "5.4721799677136795",
+          "f0_rmse_cents": "42.0388314037029",
+          "vuv_error_rate": "0.03781268179173938"
+        },
+        {
+          "condition": "held_exact",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.228244126375252",
+          "stoi": "0.623830861887505",
+          "f0_rmse_hz": "11.764239042241025",
+          "f0_rmse_cents": "163.69390506306974",
+          "vuv_error_rate": "0.13903432228039558"
+        },
+        {
+          "condition": "held_rvq",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.266545982137327",
+          "stoi": "0.6360650447961819",
+          "f0_rmse_hz": "8.727367506861246",
+          "f0_rmse_cents": "90.1227578825726",
+          "vuv_error_rate": "0.14194299011052938"
+        },
+        {
+          "condition": "unedited",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.265840214925342",
+          "stoi": "0.6361248081517902",
+          "f0_rmse_hz": "8.72042668256956",
+          "f0_rmse_cents": "90.03140139671343",
+          "vuv_error_rate": "0.14077952297847585"
+        },
+        {
+          "condition": "no_feedback",
+          "utterances": "5",
+          "cer": "0.6464646464646465",
+          "character_errors": "64.0",
+          "reference_characters": "99.0",
+          "mcd_db": "6.851600393229113",
+          "stoi": "0.7737354827377474",
+          "f0_rmse_hz": "10.955749371397939",
+          "f0_rmse_cents": "74.22718208990703",
+          "vuv_error_rate": "0.07097149505526469"
+        },
+        {
+          "condition": "feedback",
+          "utterances": "5",
+          "cer": "0.5959595959595959",
+          "character_errors": "59.0",
+          "reference_characters": "99.0",
+          "mcd_db": "7.227264317697784",
+          "stoi": "0.7573939853667835",
+          "f0_rmse_hz": "9.606467826412844",
+          "f0_rmse_cents": "66.32819697726995",
+          "vuv_error_rate": "0.07969749854566609"
+        }
+      ],
+      "utmos_aggregates": [
+        {
+          "condition": "original",
+          "utmos_utterances": 5,
+          "utmos_mean": 4.012296199798584,
+          "utmos_std": 0.2601871464749153,
+          "utmos_min": 3.6742405891418457,
+          "utmos_max": 4.281228065490723
+        },
+        {
+          "condition": "original_ema",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.3760855197906494,
+          "utmos_std": 0.3348284421950122,
+          "utmos_min": 2.972008466720581,
+          "utmos_max": 3.7310476303100586
+        },
+        {
+          "condition": "normal_rvq",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.541952657699585,
+          "utmos_std": 0.3159183616531942,
+          "utmos_min": 3.216421127319336,
+          "utmos_max": 3.909550666809082
+        },
+        {
+          "condition": "held_exact",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7356779336929322,
+          "utmos_std": 0.42863723929082015,
+          "utmos_min": 1.3105158805847168,
+          "utmos_max": 2.445131778717041
+        },
+        {
+          "condition": "held_rvq",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7249617099761962,
+          "utmos_std": 0.3516867866802026,
+          "utmos_min": 1.308184266090393,
+          "utmos_max": 2.2811031341552734
+        },
+        {
+          "condition": "unedited",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7240633964538574,
+          "utmos_std": 0.3498924076170188,
+          "utmos_min": 1.3083101511001587,
+          "utmos_max": 2.276571750640869
+        },
+        {
+          "condition": "no_feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 2.836508941650391,
+          "utmos_std": 0.3707662165519446,
+          "utmos_min": 2.553528070449829,
+          "utmos_max": 3.382578134536743
+        },
+        {
+          "condition": "feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.02278995513916,
+          "utmos_std": 0.3952724919084182,
+          "utmos_min": 2.5083425045013428,
+          "utmos_max": 3.5134763717651367
+        }
+      ],
+      "verification": {
+        "utterances": 5,
+        "waveforms_checked": 40,
+        "control_decisions_checked": 2571,
+        "observer_prefixes_reextracted": 2511,
+        "accepted_edits_replayed": 15234,
+        "maximum_full_waveform_feature_error": 0.0,
+        "maximum_observed_feature_error": 0.0,
+        "maximum_feedback_bias_error": 0.0,
+        "maximum_token_decode_error": 0.0,
+        "maximum_wavlm_distance_error": 0.0,
+        "initial_trajectory_strictly_constant": true,
+        "initial_tokens_reencoded_from_first_position_only": true,
+        "historical_execution_sources_match_commit": true,
+        "fixed_phonation_conditions_unchanged": true,
+        "verification_source_sha256": "c7928af63c1d15435ccccab7dd4b0f1b7ece1f4f2afb5f0807ce1f8e90ade4e5"
+      },
+      "validation": {
+        "tests": 101,
+        "result": "passed",
+        "utmos_cached_new_inferences": 0,
+        "utmos_cached_aggregates_equal": true
+      },
+      "timing": {
+        "sum_control_seconds": 2493.2686751894653,
+        "note": "Includes concurrent first-utterance diagnostic evaluation; final ASR, UTMOS and verification excluded."
+      },
+      "evidence": [
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/audio_aggregates.csv",
+          "sha256": "12903380d30cfa249bb2eaf8adf4137fe0054af71d1c3948c598917c3339ee75"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/audio_metrics.csv",
+          "sha256": "e02c86395500a7ee942578b2c96d3b17124c2cc8f3043b6758f509e03ff4aa6b"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0006/initialization.npz",
+          "sha256": "f7b14bce1af4607c14c7bb5d38e5591d7706d8cd744303866a69f101ed1db35b"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0006/trajectories.png",
+          "sha256": "fee2a11e5dd1c516a58f2e353b502b4ad34f6634ab97d821433b51f9a54f5186"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0050/initialization.npz",
+          "sha256": "068a46df996370063bcf99318aee7776a7a30a887592f4524980f9169dc47253"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0050/trajectories.png",
+          "sha256": "cfc83a5b13788737a2e60b11d55e2907f39260f4d9eb11ecd217e370bcee33cf"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0053/initialization.npz",
+          "sha256": "34afaf0b372c892ce6cfa57bc0cf9d814eda778f21d755f7625f485525b3ed91"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0053/trajectories.png",
+          "sha256": "43c8982c01f478699b9461ce3392c946f1dda97c3c1fe2da2bbb5ac987cd141d"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0066/initialization.npz",
+          "sha256": "7eea9f6dd3c3af1cd6878a363256736dc298c5b3faef14d9f2771910ec36c8f6"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0066/trajectories.png",
+          "sha256": "53b0900244756a3b981a89d2c4c3063e3f7b027ca3bf4e2dd20c8a8a1ad775fc"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0082/initialization.npz",
+          "sha256": "0a7388afc979df753eb1a20db325d5764a1196954af6c6d55b0276f2eab614ad"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/basic5000/BASIC5000_0082/trajectories.png",
+          "sha256": "b5084985c38636606c7f57ed4d0878752cee2733065cb1b6c7cd3cb37e7d1fdf"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/feature_metrics.csv",
+          "sha256": "948516df845e811b2248a283b4b2896a7c2967a7fd8dd2846881193eecb4138e"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/index.html",
+          "sha256": "4437caedee1b118739d263b6b63e4788b96341c8c89989e2c98810653580b162"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/manifest.json",
+          "sha256": "1474fc8df26655417d8617dbc143132582e59bf585ae0829857cf52dd26a32ff"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/aggregates.csv",
+          "sha256": "9eca20a164f891953d113b1d482fe7acd38908e218e153b48599c2cc0e39004a"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/audio_aggregates_with_utmos.csv",
+          "sha256": "340a21486f0e3a37eb268e03966a2d353b7924d788b7eda96971b2550c40d5d1"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/audio_metrics_with_utmos.csv",
+          "sha256": "1ba8a1439441b2f9c8432415b82e67ec025eaa5394e3efa2f5f421a86ad61f04"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/initial_manifest.json",
+          "sha256": "6e51edbf2c1077cc58ebe4ed6552442193b76b88dc616025ac50d41807e6d7bb"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/initial_metrics.csv",
+          "sha256": "5f1613e6ad1b00dfe5cc969006eaf4259f7bc92365b8775600c5864c26df76ca"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/manifest.json",
+          "sha256": "d32afd9016aff847353a4f68b76072fb8435209dec7fc4a31e6d016abab93038"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/utmos/metrics.csv",
+          "sha256": "d7dcb683b135351eccf1863a7ab8a5e52eb569cc1d4dd7563c0ffcc5e5c82a3f"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback/verification.json",
+          "sha256": "a9960d835966801a78e09be1816c43d2eea7dd8b256ea3745964aed58222e2f2"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/first_asr_cache_provenance.json",
+          "sha256": "738185f862db05b550d6f436d3969983e163e795d4c07002a65828b6cf671fc9"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/first_audio_evaluation.log",
+          "sha256": "5b02aa2973e04b5d50c68f56fe582345236e12f00d95c339368f5a06a0bd8593"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/first_audio_metrics.csv",
+          "sha256": "ad0d5451266931924f97af92de8ccdb5365bba0f09684db7401c48a5fa4d5bac"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/first_verification.log",
+          "sha256": "4c47d19110f4a5ba0f832391720114d229fdd85617d18b9b57a0b50078b311e8"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/run.log",
+          "sha256": "4564e76323a8b9cf98fbe07c24cacd266cb8b1d1b3301169a81434f750e2d4df"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/tests.log",
+          "sha256": "ae204a3c1028ac7a70b7730c05fd038f7b9a1233f45443ebf5937caaa9344521"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/utmos.log",
+          "sha256": "16b255305d311eec7056ffea971125736baff425ee1ab1d3aeb819d6981e35de"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/utmos_cached.log",
+          "sha256": "61497afe4452bbf44bb05196a3bcdb8a685ebddf0a39a6a4242a75804fc2f0da"
+        },
+        {
+          "path": "outputs/jsut_held_start_wavlm_feedback_logs/verification.log",
+          "sha256": "a282a7c7243abeb63533bbe561acf263663400206ca697485b75c3a254f44ec7"
         }
       ]
     }

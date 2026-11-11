@@ -16,6 +16,8 @@ bash scripts/held_start_feedback.sh --resume
 bash scripts/held_start_feedback.sh --utterances BASIC5000_0006 --output-dir outputs/held_start_single
 # 完了後、保存波形から全観測接頭辞とFB補正を独立に再計算
 bash scripts/verify_held_start_feedback.sh
+# 保存済み音声にUTMOS22 strongを追加
+bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_held_start_wavlm_feedback
 ```
 
 `outputs/jsut_held_start_wavlm_feedback/index.html` に試聴音声と軌道を保存する。
