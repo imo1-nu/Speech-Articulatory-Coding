@@ -45,6 +45,7 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 | WavLM特徴量／PPG目標の一括・遅延FB | 完了 | [60条件の試聴と評価](../outputs/jsut_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#wavlm特徴量を目標とするrvq制御) |
 | 保存音声へのUTMOS22 strong追加評価 | 完了 | [UTMOS集計と試聴](../outputs/jsut_wavlm_feedback/index.html#utmos-evaluation) | [実行手順](../docs/jsut-pipeline.md#utmosによる追加評価) |
 | 初期調音位置固定からのWavLM逐次制御 | 完了 | [固定・FBなし・FBありの試聴](../outputs/jsut_held_start_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#初期調音位置を保持した状態からのwavlm制御) |
+| 固定初期位置からのPPG・WavLM編集比較 | 完了 | [50音声の比較・試聴](../outputs/jsut_held_start_feature_comparison/index.html) | [実行手順](../docs/jsut-pipeline.md#同じ固定初期値でppg編集と比較する) |
 | JSUT抽出スモークテスト | スモーク | [outputs/jsut_smoke](../outputs/jsut_smoke) | [scripts/extract_jsut.sh](../scripts/extract_jsut.sh) |
 | VQスモークテスト | スモーク | [outputs/jsut_tokens_smoke](../outputs/jsut_tokens_smoke) | [scripts/model_jsut_tokens.sh](../scripts/model_jsut_tokens.sh) |
 | 復号条件修正前の試聴出力 | 置換済み | [outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights](../outputs/jsut_window_sweep/window_040ms/audio_comparison_before_exact_weights) | [scripts/compare_jsut_audio.sh](../scripts/compare_jsut_audio.sh) |
@@ -442,6 +443,46 @@ WavLM距離とUTMOSは発話の等重み平均、CERは99文字のmicro集計。
 保存WavLM特徴量・観測特徴量・FB補正・復号軌道・距離の最大差はすべて0だった。
 UTMOSの再表示はキャッシュからの新規推論0回で集計が一致した。
 探索条件の実測時間合計は約41.6分（初期発話の診断評価の併走を含み、最終ASR・UTMOS・独立検証は別）。
+
+### 初期位置固定：PPGとWavLMの比較
+
+作業ブランチ `research/held-start-ppg-comparison` はmainから作成し、前回の固定初期位置実験をfast-forwardで引き継いだ。
+PPG探索実行版は `4765227`、比較処理は `ffeed7f`・`5208920`、独立検証の修正は `9de7349`。
+同じテスト5発話・99文字、最初の位置だけから作った同じRVQ8初期トークンで、PPGのFBなし／ありを新規生成した。
+WavLMは前回の保存音声を再利用。F0・音量・話者・合成ゲインも同一で、共通6条件×5発話の30波形はバイト単位で一致した。
+共通音声のWhisper認識結果も同じモデル版・設定と波形SHA256を照合して再利用した。
+
+40 ms窓・50 Hz・20 ms更新・60 ms観測遅延・400 ms探索窓、全8段編集、各段2位置を1パス、12近傍＋4広域候補・バッチ4。
+1段目遷移NLL重みは両方式0.03だが、JSとcosine距離の尺度が異なり、同じ実効的制約強度とは扱わない。
+PPGは35音素・100 Hz、FBはlog平均音素確率差のEMAと各成分−1〜1への制限。
+最初の観測はPPGで100 ms、WavLMで80 msから。目標音声の特徴量は事前に全体が既知。
+
+| 条件 | WavLM距離 ↓ | PPG JS ↓ | CER % ↓ | MCD dB ↓ | STOI ↑ | UTMOS ↑ |
+|---|---:|---:|---:|---:|---:|---:|
+| 通常RVQ8再構成 | 0.20234 | 0.15926 | 15.15 | 2.3156 | 0.9840 | 3.542 |
+| 初期位置固定・無編集 | 0.50593 | 0.46384 | 570.71 | 9.2658 | 0.6361 | 1.724 |
+| WavLM・FBなし | 0.24624 | 0.24887 | 64.65 | 6.8516 | 0.7737 | 2.837 |
+| WavLM・FBあり | 0.26790 | 0.30194 | 59.60 | 7.2273 | 0.7574 | 3.023 |
+| PPG・FBなし | 0.46494 | 0.19656 | 364.65 | 8.0744 | 0.6724 | 1.454 |
+| PPG・FBあり | 0.46936 | 0.20886 | 150.51 | 8.1821 | 0.6432 | 1.467 |
+
+特徴量距離とUTMOSは5発話の等重み平均。CERはWhisper large-v3と正解99文字のmicro集計、MCD/STOIの参照は元軌道合成。
+両特徴量をすべての保存音声から新たに抽出し、各方式の保存済みの目的距離と差0で一致した。
+
+今回の設定では、PPG編集は固定状態よりPPG JSを下げた一方、UTMOSは固定状態よりも低下し、WavLM編集よりMCD・STOI・CERも悪かった。
+PPGの目標距離が下がったことを、発音や音質の回復とは解釈できない。
+PPGのFB追加でCERは361/99から149/99誤りへ下がるが、BASIC5000_0053の長い反復認識の減少（256→35誤り）が大きく寄与する。
+5発話中、CER改善は2発話、悪化は3発話。UTMOSの変化は1.454→1.468と小さく、PPG JS・MCD・STOIは悪化した。
+CERは挿入誤り込みなので100%を超える。PPG・FBなしの内訳は置換90・挿入271、FBありは置換92・挿入57で、削除はいずれも0。
+認識全文と試聴を併用し、CERの大幅低下だけでFBによる音質改善とは判断しない。
+これは5発話・同じ数値の遷移重みでの比較であり、PPG方式一般の限界や最適な制約強度を決める実験ではない。
+
+PPG単独出力は `outputs/jsut_held_start_ppg_feedback/`、両方式の50音声・認識文・軌道図・指標は
+`outputs/jsut_held_start_feature_comparison/` に保存した。全105テストが成功。
+PPGの全2,571更新・12,752採用編集を再生し、2,496観測接頭辞を保存波形から独立再抽出。
+特徴量・観測・FB補正・復号軌道・距離の最大差はすべて0だった。
+比較50波形のハッシュと、既存40音声のUTMOS再採点が前回と差0で一致することも確認した。
+PPG制御条件の実測時間合計は約22.2分（診断評価の併走を含み、最終ASR・UTMOS・独立検証は別）。
 
 ## 旧実験と保全した履歴
 

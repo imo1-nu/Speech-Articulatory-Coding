@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261111T073509Z",
+  "generated_at_utc": "20261112T061939Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -147,6 +147,38 @@
       "title": "test: verify held-start control from saved audio prefixes",
       "files": [
         "sparc/verify_held_start_feedback.py"
+      ]
+    },
+    {
+      "commit": "4765227",
+      "title": "feat: support PPG feedback from held initial articulation",
+      "files": [
+        "sparc/held_start_feedback.py",
+        "sparc/verify_held_start_feedback.py",
+        "tests/test_held_start_feedback.py"
+      ]
+    },
+    {
+      "commit": "ffeed7f",
+      "title": "feat: compare saved held-start PPG and WavLM control audio",
+      "files": [
+        "sparc/compare_held_start_features.py",
+        "scripts/compare_held_start_features.sh",
+        "tests/test_compare_held_start_features.py"
+      ]
+    },
+    {
+      "commit": "9de7349",
+      "title": "fix: preserve feature metric key during phonation verification",
+      "files": [
+        "sparc/verify_held_start_feedback.py"
+      ]
+    },
+    {
+      "commit": "8747f50",
+      "title": "test: cover PPG verification through phonation and distance checks",
+      "files": [
+        "tests/test_verify_held_start_feedback.py"
       ]
     }
   ],
@@ -5015,6 +5047,457 @@
         {
           "path": "outputs/jsut_held_start_wavlm_feedback_logs/verification.log",
           "sha256": "a282a7c7243abeb63533bbe561acf263663400206ca697485b75c3a254f44ec7"
+        }
+      ]
+    },
+    {
+      "id": "held-start-ppg-comparison",
+      "status": "complete",
+      "branch": "research/held-start-ppg-comparison",
+      "depends_on": [
+        "held-start-wavlm-feedback"
+      ],
+      "source_commit": "4765227b279649df910d59f333c57df63e403be2",
+      "supporting_implementation_commits": [
+        "4765227",
+        "ffeed7f",
+        "5208920",
+        "9de7349",
+        "8747f50"
+      ],
+      "run_dir": "outputs/jsut_held_start_feature_comparison",
+      "raw_ppg_run_dir": "outputs/jsut_held_start_ppg_feedback",
+      "report": "outputs/jsut_held_start_feature_comparison/index.html",
+      "entrypoints": [
+        "scripts/held_start_feedback.sh",
+        "scripts/compare_held_start_features.sh"
+      ],
+      "reproduction_commands": [
+        "bash scripts/held_start_feedback.sh --objective ppg",
+        "bash scripts/verify_held_start_feedback.sh --run-dir outputs/jsut_held_start_ppg_feedback",
+        "bash scripts/compare_held_start_features.sh",
+        "bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_held_start_feature_comparison"
+      ],
+      "settings": {
+        "output_dir": "outputs/jsut_held_start_ppg_feedback",
+        "utterances": null,
+        "device": "cuda",
+        "objective": "ppg",
+        "initial_position_frame": 0,
+        "horizon_ms": 400,
+        "step_ms": 20,
+        "delay_ms": 60,
+        "transition_weight": 0.03
+      },
+      "inputs_signature": {
+        "outputs/jsut_held_start_wavlm_feedback/manifest.json": "1474fc8df26655417d8617dbc143132582e59bf585ae0829857cf52dd26a32ff",
+        "outputs/jsut_held_start_ppg_feedback/manifest.json": "9c9d11a31f5766c53d5d221daaa8ee89e0e5d11015d7a4e9283fc5b01ebd8c16"
+      },
+      "initialization": "all 12 coordinates held at first extracted frame; repeated RVQ code tuple; original F0/loudness/speaker/gain retained",
+      "features": {
+        "wavlm": {
+          "model": "microsoft/wavlm-large",
+          "revision": "c1423ed94bb01d80a3f5ce5bc39f6026a0f4828c",
+          "weights_sha256": "fdee460e529396ddb2f8c8e8ce0ad74cfb747b726bc6f612e666c7c1e1963c9d",
+          "hidden_state_index": 9,
+          "lowpass_hz": null,
+          "normalize_waveform": true,
+          "zero_pad_samples": 160,
+          "metric": "mean framewise cosine distance",
+          "precision": "float32",
+          "waveform_statistics": "float64 population mean/std, then float32",
+          "frame_stride_samples": 320,
+          "frame_center_offset_samples": 39.5,
+          "receptive_field_samples": 400
+        },
+        "ppg": {
+          "checkpoint_sha256": "02ffb9e39dfb20bb0ccb1e5a4ed10615491197087ae7e50951dea79b7335b201",
+          "metric": "mean Jensen-Shannon divergence",
+          "frame_stride_samples": 160,
+          "frame_center_offset_samples": 80
+        }
+      },
+      "utterances": 5,
+      "comparison_conditions": 10,
+      "comparison_audio_files": 50,
+      "asr_model": "openai/whisper-large-v3",
+      "asr_revision": "06f233fe06e710322aca913c1bc4249a0d71fce1",
+      "asr_settings": {
+        "language": "ja",
+        "task": "transcribe",
+        "num_beams": 1,
+        "do_sample": false,
+        "max_new_tokens": 256,
+        "prompt": null
+      },
+      "audio_metric_reference": "original_ema",
+      "audio_aggregates": [
+        {
+          "condition": "original",
+          "utterances": "5",
+          "cer": "0.09090909090909091",
+          "character_errors": "9.0",
+          "reference_characters": "99.0",
+          "mcd_db": "6.763565988377051",
+          "stoi": "0.8400675246717586",
+          "f0_rmse_hz": "9.123694812525127",
+          "f0_rmse_cents": "73.58450166625559",
+          "vuv_error_rate": "0.07969749854566609"
+        },
+        {
+          "condition": "original_ema",
+          "utterances": "5",
+          "cer": "0.1414141414141414",
+          "character_errors": "14.0",
+          "reference_characters": "99.0",
+          "mcd_db": "0.0",
+          "stoi": "0.9999999999999994",
+          "f0_rmse_hz": "0.0",
+          "f0_rmse_cents": "0.0",
+          "vuv_error_rate": "0.0"
+        },
+        {
+          "condition": "normal_rvq",
+          "utterances": "5",
+          "cer": "0.15151515151515152",
+          "character_errors": "15.0",
+          "reference_characters": "99.0",
+          "mcd_db": "2.3156064322630376",
+          "stoi": "0.9840210398534737",
+          "f0_rmse_hz": "5.4721799677136795",
+          "f0_rmse_cents": "42.0388314037029",
+          "vuv_error_rate": "0.03781268179173938"
+        },
+        {
+          "condition": "held_exact",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.228244126375252",
+          "stoi": "0.623830861887505",
+          "f0_rmse_hz": "11.764239042241025",
+          "f0_rmse_cents": "163.69390506306974",
+          "vuv_error_rate": "0.13903432228039558"
+        },
+        {
+          "condition": "held_rvq",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.266545982137327",
+          "stoi": "0.6360650447961819",
+          "f0_rmse_hz": "8.727367506861246",
+          "f0_rmse_cents": "90.1227578825726",
+          "vuv_error_rate": "0.14194299011052938"
+        },
+        {
+          "condition": "unedited",
+          "utterances": "5",
+          "cer": "5.707070707070707",
+          "character_errors": "565.0",
+          "reference_characters": "99.0",
+          "mcd_db": "9.265840214925342",
+          "stoi": "0.6361248081517902",
+          "f0_rmse_hz": "8.72042668256956",
+          "f0_rmse_cents": "90.03140139671343",
+          "vuv_error_rate": "0.14077952297847585"
+        },
+        {
+          "condition": "wavlm_no_feedback",
+          "utterances": "5",
+          "cer": "0.6464646464646465",
+          "character_errors": "64.0",
+          "reference_characters": "99.0",
+          "mcd_db": "6.851600393229113",
+          "stoi": "0.7737354827377474",
+          "f0_rmse_hz": "10.955749371397939",
+          "f0_rmse_cents": "74.22718208990703",
+          "vuv_error_rate": "0.07097149505526469"
+        },
+        {
+          "condition": "wavlm_feedback",
+          "utterances": "5",
+          "cer": "0.5959595959595959",
+          "character_errors": "59.0",
+          "reference_characters": "99.0",
+          "mcd_db": "7.227264317697784",
+          "stoi": "0.7573939853667835",
+          "f0_rmse_hz": "9.606467826412844",
+          "f0_rmse_cents": "66.32819697726995",
+          "vuv_error_rate": "0.07969749854566609"
+        },
+        {
+          "condition": "ppg_no_feedback",
+          "utterances": "5",
+          "cer": "3.6464646464646466",
+          "character_errors": "361.0",
+          "reference_characters": "99.0",
+          "mcd_db": "8.07437548006781",
+          "stoi": "0.6723702621270092",
+          "f0_rmse_hz": "9.694923717393676",
+          "f0_rmse_cents": "73.84108927271659",
+          "vuv_error_rate": "0.10354857475276323"
+        },
+        {
+          "condition": "ppg_feedback",
+          "utterances": "5",
+          "cer": "1.505050505050505",
+          "character_errors": "149.0",
+          "reference_characters": "99.0",
+          "mcd_db": "8.182109482222087",
+          "stoi": "0.6431735013760033",
+          "f0_rmse_hz": "14.508669694035385",
+          "f0_rmse_cents": "158.24599166085565",
+          "vuv_error_rate": "0.11751018033740547"
+        }
+      ],
+      "utmos_aggregates": [
+        {
+          "condition": "original",
+          "utmos_utterances": 5,
+          "utmos_mean": 4.012296199798584,
+          "utmos_std": 0.2601871464749153,
+          "utmos_min": 3.6742405891418457,
+          "utmos_max": 4.281228065490723
+        },
+        {
+          "condition": "original_ema",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.3760855197906494,
+          "utmos_std": 0.3348284421950122,
+          "utmos_min": 2.972008466720581,
+          "utmos_max": 3.7310476303100586
+        },
+        {
+          "condition": "normal_rvq",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.541952657699585,
+          "utmos_std": 0.3159183616531942,
+          "utmos_min": 3.216421127319336,
+          "utmos_max": 3.909550666809082
+        },
+        {
+          "condition": "held_exact",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7356779336929322,
+          "utmos_std": 0.42863723929082015,
+          "utmos_min": 1.3105158805847168,
+          "utmos_max": 2.445131778717041
+        },
+        {
+          "condition": "held_rvq",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7249617099761962,
+          "utmos_std": 0.3516867866802026,
+          "utmos_min": 1.308184266090393,
+          "utmos_max": 2.2811031341552734
+        },
+        {
+          "condition": "unedited",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.7240633964538574,
+          "utmos_std": 0.3498924076170188,
+          "utmos_min": 1.3083101511001587,
+          "utmos_max": 2.276571750640869
+        },
+        {
+          "condition": "wavlm_no_feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 2.836508941650391,
+          "utmos_std": 0.3707662165519446,
+          "utmos_min": 2.553528070449829,
+          "utmos_max": 3.382578134536743
+        },
+        {
+          "condition": "wavlm_feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 3.02278995513916,
+          "utmos_std": 0.3952724919084182,
+          "utmos_min": 2.5083425045013428,
+          "utmos_max": 3.5134763717651367
+        },
+        {
+          "condition": "ppg_no_feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.454282546043396,
+          "utmos_std": 0.07229303651643317,
+          "utmos_min": 1.352370262145996,
+          "utmos_max": 1.5370213985443115
+        },
+        {
+          "condition": "ppg_feedback",
+          "utmos_utterances": 5,
+          "utmos_mean": 1.4674800872802733,
+          "utmos_std": 0.09956774484972665,
+          "utmos_min": 1.342210054397583,
+          "utmos_max": 1.6135112047195435
+        }
+      ],
+      "ppg_verification": {
+        "utterances": 5,
+        "waveforms_checked": 40,
+        "control_decisions_checked": 2571,
+        "observer_prefixes_reextracted": 2496,
+        "accepted_edits_replayed": 12752,
+        "maximum_full_waveform_feature_error": 0.0,
+        "maximum_observed_feature_error": 0.0,
+        "maximum_feedback_bias_error": 0.0,
+        "maximum_token_decode_error": 0.0,
+        "maximum_ppg_js_error": 0.0,
+        "initial_trajectory_strictly_constant": true,
+        "initial_tokens_reencoded_from_first_position_only": true,
+        "historical_execution_sources_match_commit": true,
+        "fixed_phonation_conditions_unchanged": true,
+        "verification_source_sha256": "77f8d410a637e4fb91fc47a2dc2f127a77d05e067e33537126c55376f698ac9f"
+      },
+      "comparison_verification": {
+        "utterances": 5,
+        "shared_waveform_pairs_byte_identical": 30,
+        "initial_positions_tokens_and_phonation_identical": true,
+        "control_settings_and_search_code_match": true,
+        "waveforms_checked": 50,
+        "native_distance_max_absolute_error": 0.0,
+        "previous_utmos_waveforms_checked": 40,
+        "previous_utmos_max_absolute_error": 0.0,
+        "audio_players": 50,
+        "utmos_sections": 1,
+        "utmos_primary_table_cells": 11,
+        "unit_tests": 105
+      },
+      "validation": {
+        "tests": 105,
+        "result": "passed"
+      },
+      "timing": {
+        "sum_ppg_control_seconds": 1334.352093104273,
+        "note": "Includes diagnostic evaluation concurrency; final ASR, UTMOS and verification excluded."
+      },
+      "evidence": [
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/audio_aggregates.csv",
+          "sha256": "206c02f8c5154a469470daf271fac05fc060d0314ba60f67bf12afad66fe4b9e"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/audio_metrics.csv",
+          "sha256": "660c5a1858323bbe66b03bed14fa690380441f1ed57b0c107c53068d82f4597b"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/feature_metrics.csv",
+          "sha256": "99286617e6cfb066afa07064a6ec6fb8b87359220d36db72b3603ff4fbddbf51"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/index.html",
+          "sha256": "03551d7d91876e9f093ba147b83ec8600fa4c012a62f0cdbf31f93ebaae7bfc5"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/manifest.json",
+          "sha256": "c45fe7a900118b835c30da3e6e8d2a4c81ab87afcc4228b7a752a6a9c7377907"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/utmos/aggregates.csv",
+          "sha256": "c7adf40e6041526d3c8878a3e5ef272c13d5ea35cd9303486324a549a810d185"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/utmos/audio_aggregates_with_utmos.csv",
+          "sha256": "745dcd65d7650daf92c28d5b1ec1eb9ce5a24653d9dcbd55e7774c76119cd81a"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/utmos/audio_metrics_with_utmos.csv",
+          "sha256": "3828174c8c46a11042613801be9e638edeb6060a4cac59e0e96faa0e40e84aa6"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/utmos/manifest.json",
+          "sha256": "5f4b2053a4e9e947c03fd9c5242d2c02cf7927cf3f743135e01571d5250c2b73"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/utmos/metrics.csv",
+          "sha256": "b5ce79f055fb60dc2c5f7e580f09e1ec26ccbc73f600c9fa44d162ca882b1f60"
+        },
+        {
+          "path": "outputs/jsut_held_start_feature_comparison/verification.json",
+          "sha256": "80161252acf08c4f727ef8602fa0903824a73a508a106da9529e867785dea396"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/audio_aggregates.csv",
+          "sha256": "017c6acb528381968406f534283493208a841c9984de944e101a2f72bd34d6e0"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/audio_metrics.csv",
+          "sha256": "b5bb2d8487b4d4fb3562c2329b892d1723b277c675060be4bdbd235d0c33c134"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/basic5000/BASIC5000_0006/initialization.npz",
+          "sha256": "f7b14bce1af4607c14c7bb5d38e5591d7706d8cd744303866a69f101ed1db35b"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/basic5000/BASIC5000_0050/initialization.npz",
+          "sha256": "068a46df996370063bcf99318aee7776a7a30a887592f4524980f9169dc47253"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/basic5000/BASIC5000_0053/initialization.npz",
+          "sha256": "34afaf0b372c892ce6cfa57bc0cf9d814eda778f21d755f7625f485525b3ed91"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/basic5000/BASIC5000_0066/initialization.npz",
+          "sha256": "7eea9f6dd3c3af1cd6878a363256736dc298c5b3faef14d9f2771910ec36c8f6"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/basic5000/BASIC5000_0082/initialization.npz",
+          "sha256": "0a7388afc979df753eb1a20db325d5764a1196954af6c6d55b0276f2eab614ad"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/feature_metrics.csv",
+          "sha256": "c87fab72725fad1a8c407e7adf655b9ecae9d686f9fafb7d49b7d96dfef31cca"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/index.html",
+          "sha256": "cfd776e6cb2450f7bbdd4e10322935a29e0bcebafcb80eea20425b0830935aa3"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/manifest.json",
+          "sha256": "9c9d11a31f5766c53d5d221daaa8ee89e0e5d11015d7a4e9283fc5b01ebd8c16"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback/verification.json",
+          "sha256": "d3cf83c8d75d034a312cab63b8ce16d19e90aac865e9b2087a415cafd6234f89"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/comparison.log",
+          "sha256": "1a463fbbbd33dc4ba7bdb043a50cab1f79901067511925f55c23a1e4eb28d9a1"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/first_verification.log",
+          "sha256": "d5a7428a344e115e636ff62f76d689dfcf9a488169b8f08bf1a2706679ecd6e3"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/first_verification_before_fix.log",
+          "sha256": "e0692ce035561eea1ae370931b5183f3529ab930d3b7692b00db002655d5bfa3"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/run.log",
+          "sha256": "ab1f50a722a77367b5b389c98b55291c31cb53f856be626ab1d34bd25ca47dd7"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/shared_asr_cache.csv",
+          "sha256": "c432e67771a16b7a87d3fc558e4210e62ffa804e65b7d217a14e9203a9b2a69c"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/shared_asr_cache_provenance.json",
+          "sha256": "e913cb7af9e6428f750983a295e94a329eac0769369432ba017c26f117b6ed34"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/tests.log",
+          "sha256": "c57a9341cd9a6ba121b143bc6d88a0390650eb8c22e5b8cd09cb716e650f658a"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/utmos.log",
+          "sha256": "0e2cc4475a8f7210ee323078ed0558da23775ba3b08e6e914d891bdbe1c6bb5c"
+        },
+        {
+          "path": "outputs/jsut_held_start_ppg_feedback_logs/verification.log",
+          "sha256": "63e56aedb214d54574d8e537492b7ea2a3b50e0a3fe0b791b8a5eabc93fff221"
         }
       ]
     }
