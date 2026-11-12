@@ -1,4 +1,4 @@
-"""Recover articulation from a held first position using delayed WavLM RVQ control."""
+"""Recover articulation from a held first position using delayed WavLM or PPG RVQ control."""
 
 import argparse
 import csv
@@ -46,7 +46,16 @@ def held_initialization(first_position, frames, model, mean, std, device):
     return held, tokens
 
 
-def audit_control(result, initial, mode):
+def condition_labels(kind):
+    if kind not in ('wavlm','ppg'):raise ValueError('Unknown objective')
+    return {k:v.replace('WavLM','PPG') if kind=='ppg' else v for k,v in LABELS.items()}
+
+
+def distance_key(kind):
+    return 'ppg_js' if kind=='ppg' else 'wavlm_distance'
+
+
+def audit_control(result, initial, mode, objective='wavlm'):
     """Replay edits, availability limits, emitted chunks and frozen token/audio prefixes."""
     tokens = initial.copy()
     if len(result['trace']) != len(tokens):
@@ -79,7 +88,9 @@ def audit_control(result, initial, mode):
     np.testing.assert_array_equal(tokens,result['tokens'])
     if mode != 'feedback' and np.any(result['biases']):
         raise ValueError('Feedback applied in control condition')
-    if np.linalg.norm(result['biases'],axis=1).max() > 1+1e-10:
+    if objective not in ('wavlm','ppg'):raise ValueError('Unknown objective')
+    bound = np.abs(result['biases']).max() if objective=='ppg' else np.linalg.norm(result['biases'],axis=1).max()
+    if bound > 1+1e-10:
         raise ValueError('Feedback bias exceeds bound')
     if result['terminal_observation']['used_for_control']:
         raise ValueError('Terminal observation leaked into control')
@@ -88,7 +99,7 @@ def audit_control(result, initial, mode):
             'non_feedback_bias_zero':mode=='feedback' or not np.any(result['biases'])}
 
 
-def plot_trajectories(path, original, held, reconstructed, outputs):
+def plot_trajectories(path, original, held, reconstructed, outputs, kind='wavlm'):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -97,8 +108,8 @@ def plot_trajectories(path, original, held, reconstructed, outputs):
     for ax, channel, name in zip(axes.flat,(0,1,4,5,10,11),('TDX','TDY','TTX','TTY','LLX','LLY')):
         for value,label,style in [(original,'Extracted original','k-'),(held,'Held exact','k:'),
                                   (reconstructed,'Held RVQ','--'),
-                                  (outputs['no_feedback'],'WavLM without FB','-'),
-                                  (outputs['feedback'],'WavLM with FB','-')]:
+                                  (outputs['no_feedback'],f'{kind.upper()} without FB','-'),
+                                  (outputs['feedback'],f'{kind.upper()} with FB','-')]:
             ax.plot(t,value[:,channel],style,label=label,alpha=.8,linewidth=1)
         ax.set_ylabel(name);ax.grid(alpha=.2)
     axes[0,0].legend(fontsize=8);axes[-1,0].set_xlabel('Time (s)');axes[-1,1].set_xlabel('Time (s)')
@@ -106,22 +117,24 @@ def plot_trajectories(path, original, held, reconstructed, outputs):
 
 
 def write_report(output, manifest, rows):
+    kind = manifest['settings'].get('objective','wavlm')
+    labels = condition_labels(kind);key = distance_key(kind)
     groups = metrics.aggregate(rows) if rows else []
     if groups: save_csv(output/'audio_aggregates.csv',groups)
-    table = ''.join(f'<tr><td>{LABELS[r["condition"]]}</td><td>{r["utterances"]}</td>'
+    table = ''.join(f'<tr><td>{labels[r["condition"]]}</td><td>{r["utterances"]}</td>'
                     f'<td>{100*r["cer"]:.2f}</td><td>{r["mcd_db"]:.3f}</td><td>{r["stoi"]:.4f}</td></tr>' for r in groups)
     features = ''
-    for condition in LABELS:
+    for condition in labels:
         group = [r for r in manifest['records'] if r['condition']==condition]
         if group:
-            features += f'<tr><td>{LABELS[condition]}</td><td>{len(group)}</td><td>{np.mean([r["wavlm_distance"] for r in group]):.5f}</td></tr>'
+            features += f'<tr><td>{labels[condition]}</td><td>{len(group)}</td><td>{np.mean([r[key] for r in group]):.5f}</td></tr>'
     cards = []
     for source in manifest['inputs']:
         folder = source['directory']
-        players = ''.join(f'<div><h3>{html.escape(LABELS[c])}</h3>{audio_player(r["audio"])}</div>'
-                          for c in LABELS for r in manifest['records']
+        players = ''.join(f'<div><h3>{html.escape(labels[c])}</h3>{audio_player(r["audio"])}</div>'
+                          for c in labels for r in manifest['records']
                           if r['utterance_id']==source['utterance_id'] and r['condition']==c)
-        transcripts = ''.join(f'<li>{LABELS[r["condition"]]}: {html.escape(r["asr_text"])}</li>'
+        transcripts = ''.join(f'<li>{labels[r["condition"]]}: {html.escape(r["asr_text"])}</li>'
                               for r in rows if r['utterance_id']==source['utterance_id'])
         plot = f'<img src="{folder}/trajectories.png" style="width:100%" alt="Trajectory comparison">' if (output/folder/'trajectories.png').exists() else ''
         cards.append(f'<section><h2>{source["utterance_id"]}</h2><p>{html.escape(source["text"])}</p><div class="players">{players}</div>{plot}<ul>{transcripts}</ul></section>')
@@ -140,16 +153,21 @@ FBなしも候補音声を生成して目標距離を評価します。FBあり�
 <h2>WavLM距離（発話平均）</h2><table><tr><th>条件</th><th>発話数</th><th>距離 ↓</th></tr>'''
     page += features+'</table><h2>音声指標（音響参照：元軌道合成）</h2><table><tr><th>条件</th><th>発話数</th><th>CER % ↓</th><th>MCD dB ↓</th><th>STOI ↑</th></tr>'+table+'</table>'+''.join(cards)
     page += "<script>document.querySelectorAll('audio').forEach(p=>p.onplay=()=>document.querySelectorAll('audio').forEach(q=>{if(q!==p)q.pause()}));</script></html>"
+    if kind=='ppg':
+        page = page.replace('WavLM-large hidden_states[9]','日本語35音素PPG').replace('WavLM距離','PPG JS').replace('WavLM','PPG')
     (output/'index.html').write_text(page,encoding='utf-8')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-dir',type=Path,default=Path('outputs/jsut_held_start_wavlm_feedback'))
+    parser.add_argument('--objective',choices=('wavlm','ppg'),default='wavlm')
+    parser.add_argument('--output-dir',type=Path)
     parser.add_argument('--utterances',nargs='+')
     parser.add_argument('--device',default='cuda')
     parser.add_argument('--resume',action='store_true')
     args = parser.parse_args();torch.set_num_threads(4)
+    if args.output_dir is None:args.output_dir = Path(f'outputs/jsut_held_start_{args.objective}_feedback')
+    key = distance_key(args.objective)
     if args.utterances and len(args.utterances)!=len(set(args.utterances)):parser.error('Duplicate utterances')
     if args.output_dir.exists() and any(args.output_dir.iterdir()) and not args.resume:parser.error('Use a new output or --resume')
     baseline_dir = Path('outputs/jsut_rvq/comparison_verified');model_dir = Path('outputs/jsut_rvq/model')
@@ -163,8 +181,9 @@ def main():
     config,splits,_,_,_ = load_run(Path(rvq_config['reference_dir']),'cpu')
     sources = {name:sha256_file(Path(__file__).with_name(name)) for name in
                ('held_start_feedback.py','feature_feedback_search.py','feedback_features.py','trajectory_rvq.py',
-                'rvq_transition_search.py','local_ppg_search.py','sequential_ppg_search.py','evaluate_generated_audio.py')}
+                'rvq_transition_search.py','local_ppg_search.py','sequential_ppg_search.py','evaluate_generated_audio.py','japanese_ppg.py')}
     settings = {'output_dir':str(args.output_dir),'utterances':args.utterances,'device':args.device,
+                'objective':args.objective,
                 'initial_position_frame':0,'horizon_ms':400,'step_ms':20,'delay_ms':60,'transition_weight':.03}
     dependencies = {str(p):sha256_file(p) for p in (baseline_dir/'manifest.json',model_dir/'codebooks.npz',prior_path,reconstruction_path)}
     if args.resume:
@@ -185,7 +204,7 @@ def main():
         raise ValueError('RVQ/prior provenance mismatch')
     generator,generator_hash = load_generator(args.device)
     if generator_hash!=reconstruction['generator_sha256']:raise ValueError('Generator changed')
-    objective = FeatureObjective('wavlm',args.device)
+    objective = FeatureObjective(args.objective,args.device)
     if baseline['asr_model']!=metrics.ASR_MODEL or baseline['asr_revision']!=metrics.ASR_REVISION:
         raise ValueError('ASR provenance mismatch')
     manifest.update({'generator_sha256':generator_hash,'feature':objective.metadata,'asr_model':metrics.ASR_MODEL,
@@ -233,7 +252,7 @@ def main():
                         stream.write(json.dumps(item)+'\n');stream.flush()
                         if item['start_token']%25==0:print(f'{rec["utterance_id"]} {mode} t={item["decision_time_ms"]}ms evaluations={item["evaluations"]}',flush=True)
                     result = delayed(initial,target,evaluator,prior['transition_probs'],mode=mode,on_step=step)
-                audit = audit_control(result,initial,mode)
+                audit = audit_control(result,initial,mode,args.objective)
                 sf.write(directory/'after.wav',result['audio'],16000,subtype='PCM_16')
                 saved = metrics.read_audio(directory/'after.wav')
                 np.testing.assert_array_equal(saved,result['audio'])
@@ -241,11 +260,11 @@ def main():
                 values = objective.extract(saved[None],fresh=True)[0]
                 n = min(len(values),len(target))
                 save_npz(directory/'result.npz',initial_tokens=initial,edited_tokens=result['tokens'],edited_ema=edited,
-                         wavlm_features=values,**{k:result[k] for k in ('prediction_features','observed_features','control_observed_features','biases','commanded_audio')})
+                         **{args.objective+'_features':values},**{k:result[k] for k in ('prediction_features','observed_features','control_observed_features','biases','commanded_audio')})
                 first = transition_statistics(result['tokens'][:,0],prior['transition_probs'],prior['transition_counts'])
                 summary = {'condition':mode,'utterance_id':rec['utterance_id'],'audio':f'{folder}/{mode}/after.wav',
                            'audio_sha256':sha256_file(directory/'after.wav'),'result_sha256':sha256_file(directory/'result.npz'),
-                           'trace_sha256':sha256_file(directory/'trace.jsonl'),'wavlm_distance':float(objective.distances(target[:n],values[:n]).mean()),
+                           'trace_sha256':sha256_file(directory/'trace.jsonl'),key:float(objective.distances(target[:n],values[:n]).mean()),
                            'edited_per_stage':np.count_nonzero(initial!=result['tokens'],axis=0).tolist(),
                            'seconds':time.monotonic()-tick,'evaluations':result['evaluations'],'verification':audit,
                            'transition':first,'trajectory_mse_sd':float(np.square((edited-original)/std).mean()),**dynamics(edited,std)}
@@ -253,16 +272,16 @@ def main():
             outputs[mode] = edited
             manifest['records'] = [r for r in manifest['records'] if (r['utterance_id'],r['condition'])!=(rec['utterance_id'],mode)]+[summary]
             write_json(args.output_dir/'manifest.json',manifest);write_report(args.output_dir,manifest,[])
-            print(f'DONE {rec["utterance_id"]} {mode}: WavLM={summary["wavlm_distance"]:.5f} seconds={summary["seconds"]:.1f}',flush=True)
+            print(f'DONE {rec["utterance_id"]} {mode}: {key}={summary[key]:.5f} seconds={summary["seconds"]:.1f}',flush=True)
         for condition in ('original','original_ema','normal_rvq','held_exact','held_rvq'):
             path = destination/f'{condition}.wav';values = objective.extract(metrics.read_audio(path)[None],fresh=True)[0]
             n = min(len(target),len(values))
             row = {'condition':condition,'utterance_id':rec['utterance_id'],'audio':f'{folder}/{condition}.wav',
-                   'audio_sha256':sha256_file(path),'wavlm_distance':float(objective.distances(target[:n],values[:n]).mean())}
+                   'audio_sha256':sha256_file(path),key:float(objective.distances(target[:n],values[:n]).mean())}
             manifest['records'] = [r for r in manifest['records'] if (r['utterance_id'],r['condition'])!=(rec['utterance_id'],condition)]+[row]
-        plot_trajectories(destination/'trajectories.png',original,held,decoded,outputs)
+        plot_trajectories(destination/'trajectories.png',original,held,decoded,outputs,args.objective)
         write_json(args.output_dir/'manifest.json',manifest);write_report(args.output_dir,manifest,[])
-    save_csv(args.output_dir/'feature_metrics.csv',[{k:r[k] for k in ('condition','utterance_id','audio','audio_sha256','wavlm_distance')} for r in manifest['records']])
+    save_csv(args.output_dir/'feature_metrics.csv',[{k:r[k] for k in ('condition','utterance_id','audio','audio_sha256',key)} for r in manifest['records']])
     # Release search models before loading Whisper-large-v3.
     del evaluator,model,generator,objective,direct
     if args.device.startswith('cuda'):torch.cuda.empty_cache()

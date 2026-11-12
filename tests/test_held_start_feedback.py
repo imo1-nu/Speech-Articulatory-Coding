@@ -1,10 +1,12 @@
 import unittest
+import tempfile
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
 import torch
 
-from sparc.held_start_feedback import held_initialization, audit_control
+from sparc.held_start_feedback import held_initialization, audit_control, write_report
 from sparc.feature_feedback_search import delayed
 from sparc.feedback_features import FeatureObjective
 
@@ -47,8 +49,28 @@ class HeldStartTest(unittest.TestCase):
         audit = audit_control(result,initial,'no_feedback')
         self.assertEqual(audit['decisions_checked'],8)
         self.assertGreater(audit['accepted_edits_replayed'],0)
+        result['biases'][:]=.8
+        audit_control(result,initial,'feedback','ppg')
+        with self.assertRaises(ValueError):audit_control(result,initial,'feedback','wavlm')
+        with self.assertRaises(ValueError):audit_control(result,initial,'no_feedback','ppg')
+        result['biases'][:]=1.01
+        with self.assertRaises(ValueError):audit_control(result,initial,'feedback','ppg')
+        result['biases'][:]=0
         result['trace'][4]['information_cutoff_samples']+=320
         with self.assertRaises(ValueError):audit_control(result,initial,'no_feedback')
+
+    def test_ppg_report_uses_js_and_wavlm_report_remains_compatible(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path=Path(temporary)
+            for settings,key,label in [({'objective':'ppg'},'ppg_js','PPG JS'),({},'wavlm_distance','WavLM距離')]:
+                manifest={'settings':settings,'inputs':[],'records':[{'condition':'feedback',key:.12}]}
+                write_report(path,manifest,[])
+                text=(path/'index.html').read_text()
+                self.assertIn(label,text)
+                self.assertIn('0.12000',text)
+                if key=='ppg_js':
+                    self.assertNotIn('WavLM',text)
+                    self.assertIn('日本語35音素PPG',text)
 
 
 if __name__ == '__main__':unittest.main()
