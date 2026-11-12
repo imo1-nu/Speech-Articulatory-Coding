@@ -69,6 +69,8 @@ WavLMのL2ノルム上限1とは別の制限で、保存補正の独立検証も
 
 ## UTMOSによる追加評価
 
+一段VQ128/512とRVQ1/2/4/8段の再構成比較は[統合比較結果](../reports/single-vq-rvq-reconstruction.md)を参照。
+
 ```sh
 # WavLM/PPG比較の保存済み75音声を採点し、試聴レポートにUTMOS列と集計を追加
 bash scripts/evaluate_utmos.sh

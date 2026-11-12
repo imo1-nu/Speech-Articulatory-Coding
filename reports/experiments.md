@@ -41,6 +41,7 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 | 量子化なし連続AEの学習 | 完了 | [学習記録](../outputs/jsut_reconstruction_ablation/continuous_ae/) | [学習スクリプト](../scripts/train_continuous_ae.sh) |
 | VQ128・VQ512・連続AEの再構成比較 | 完了 | [音声・カ行候補の比較](../outputs/jsut_reconstruction_ablation/comparison/index.html) | [比較スクリプト](../scripts/compare_trajectory_reconstruction.sh) |
 | 固定連続AEのRVQ・128コード×1/2/4/8段 | 完了 | [音声・カ行候補の比較](../outputs/jsut_rvq/comparison_verified/index.html) | [RVQ手順](../docs/jsut-pipeline.md#固定した連続aeへのrvq) |
+| 一段VQとRVQの再構成・UTMOS比較 | 完了 | [統合比較・試聴](../outputs/jsut_rvq/comparison_verified/index.html#single-vq-rvq-summary) | [比較結果と条件](single-vq-rvq-reconstruction.md) |
 | RVQ8・1段目のみ遷移ソフト制約 | 完了 | [音声と探索結果](../outputs/jsut_rvq_first_stage_transition/index.html) | [実行手順](../docs/jsut-pipeline.md#rvqの1段目に遷移ソフト制約を加えた局所探索) |
 | WavLM特徴量／PPG目標の一括・遅延FB | 完了 | [60条件の試聴と評価](../outputs/jsut_wavlm_feedback/index.html) | [実行手順](../docs/jsut-pipeline.md#wavlm特徴量を目標とするrvq制御) |
 | 保存音声へのUTMOS22 strong追加評価 | 完了 | [UTMOS集計と試聴](../outputs/jsut_wavlm_feedback/index.html#utmos-evaluation) | [実行手順](../docs/jsut-pipeline.md#utmosによる追加評価) |
@@ -222,15 +223,17 @@ Gitだけを取得した環境では、この文書に収録した結果概要�
 音声条件は固定し、MCD/STOI/F0/VUVの参照は元軌道合成、CERはWhisper large-v3とJSUT正解文。
 既存5条件の音声指標はモデル・生成器・波形ハッシュと認識設定を照合して再利用した。
 
-| 条件 | 公称bit/s | 標準化MSE ↓ | 差分MSE ↓ | MCD dB ↓ | STOI ↑ | CER % ↓ |
-|---|---:|---:|---:|---:|---:|---:|
-| VQ128 | 350 | 0.1067924 | 0.0474726 | 5.0591 | 0.8757 | 42.42 |
-| VQ512 | 450 | 0.0862074 | 0.0402363 | 4.7737 | 0.8919 | 41.41 |
-| RVQ128×1 | 350 | 0.1081399 | 0.0490674 | 4.9520 | 0.8853 | 41.41 |
-| RVQ128×2 | 700 | 0.0439438 | 0.0282975 | 4.2315 | 0.9145 | 19.19 |
-| RVQ128×4 | 1400 | 0.0150450 | 0.0146060 | 3.2740 | 0.9569 | 10.10 |
-| RVQ128×8 | 2800 | 0.0028655 | 0.0036157 | 2.3156 | 0.9840 | 15.15 |
-| 連続AE | — | 0.0004723 | 0.0003422 | 1.8455 | 0.9900 | 15.15 |
+| 条件 | 公称bit/s | 標準化MSE ↓ | 差分MSE ↓ | MCD dB ↓ | STOI ↑ | CER % ↓ | UTMOS ↑ |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| VQ128 | 350 | 0.1067924 | 0.0474726 | 5.0591 | 0.8757 | 42.42 | 2.913 |
+| VQ512 | 450 | 0.0862074 | 0.0402363 | 4.7737 | 0.8919 | 41.41 | 2.983 |
+| RVQ128×1 | 350 | 0.1081399 | 0.0490674 | 4.9520 | 0.8853 | 41.41 | 2.862 |
+| RVQ128×2 | 700 | 0.0439438 | 0.0282975 | 4.2315 | 0.9145 | 19.19 | 3.153 |
+| RVQ128×4 | 1400 | 0.0150450 | 0.0146060 | 3.2740 | 0.9569 | 10.10 | 3.271 |
+| RVQ128×8 | 2800 | 0.0028655 | 0.0036157 | 2.3156 | 0.9840 | 15.15 | 3.542 |
+| 連続AE | — | 0.0004723 | 0.0003422 | 1.8455 | 0.9900 | 15.15 | 3.309 |
+
+UTMOSは保存済み45音声への追加評価。既存の軌道・音声・ASR指標を再利用した。[一段VQとRVQの統合比較](single-vq-rvq-reconstruction.md)に条件と解釈を記載した。
 
 公称bit/sはトークンのみ・エントロピー符号化なし。連続AEは同一情報量の比較ではない。
 元音声CERは9.09%、元軌道合成は14.14%。段数を増やすと軌道誤差・MCD・STOIが改善し、

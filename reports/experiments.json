@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261112T061939Z",
+  "generated_at_utc": "20261112T092146Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -5498,6 +5498,325 @@
         {
           "path": "outputs/jsut_held_start_ppg_feedback_logs/verification.log",
           "sha256": "63e56aedb214d54574d8e537492b7ea2a3b50e0a3fe0b791b8a5eabc93fff221"
+        }
+      ]
+    },
+    {
+      "id": "single-vq-rvq-reconstruction-utmos",
+      "status": "complete",
+      "branch": "research/single-vq-rvq-reconstruction",
+      "depends_on": [
+        "frozen-ae-rvq",
+        "utmos-evaluation"
+      ],
+      "source_commit": "5243d2253bdbdafd1b3c77e23a32341d8b9b703c",
+      "run_dir": "outputs/jsut_rvq/comparison_verified",
+      "additional_results_dir": "outputs/jsut_rvq/comparison_verified/utmos",
+      "report": "outputs/jsut_rvq/comparison_verified/index.html#single-vq-rvq-summary",
+      "summary_report": "reports/single-vq-rvq-reconstruction.md",
+      "entrypoint": "scripts/evaluate_utmos.sh",
+      "reproduction_command": "bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_rvq/comparison_verified",
+      "trajectory_utterances": 250,
+      "trajectory_frames": 58629,
+      "audio_utterances": 5,
+      "audio_rows": 45,
+      "audio_metric_reference": "original_ema",
+      "cer_reference": "JSUT gold transcript; Whisper-large-v3; 99 normalized characters",
+      "summary": [
+        {
+          "condition": "vq128",
+          "label": "一段VQ128",
+          "training_method": "joint_vq_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "128",
+          "stages": "1",
+          "total_token_ids_per_second": "50",
+          "nominal_token_bps": "350",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.10679242126944856",
+          "delta_mse": "0.047472580911535577",
+          "velocity_energy_ratio": "0.9094299814851402",
+          "trajectory_6_to_10_hz_energy_ratio": "0.6636323557296168",
+          "audio_utterances": "5",
+          "mcd_db": "5.059096030157827",
+          "stoi": "0.8756775124586522",
+          "cer": "0.42424242424242425",
+          "cer_percent": "42.42424242424242",
+          "character_errors": "42",
+          "reference_characters": "99",
+          "utmos_mean": "2.91336407661438",
+          "utmos_std": "0.3656613199440201"
+        },
+        {
+          "condition": "vq512",
+          "label": "一段VQ512",
+          "training_method": "joint_vq_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "512",
+          "stages": "1",
+          "total_token_ids_per_second": "50",
+          "nominal_token_bps": "450",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.08620738659380074",
+          "delta_mse": "0.0402362769092795",
+          "velocity_energy_ratio": "0.9092986937186723",
+          "trajectory_6_to_10_hz_energy_ratio": "0.6786342410539704",
+          "audio_utterances": "5",
+          "mcd_db": "4.773699088068432",
+          "stoi": "0.8918653682060125",
+          "cer": "0.41414141414141414",
+          "cer_percent": "41.41414141414141",
+          "character_errors": "41",
+          "reference_characters": "99",
+          "utmos_mean": "2.9827803134918214",
+          "utmos_std": "0.37514782273790076"
+        },
+        {
+          "condition": "rvq1",
+          "label": "RVQ128×1段",
+          "training_method": "posthoc_rvq_frozen_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "128",
+          "stages": "1",
+          "total_token_ids_per_second": "50",
+          "nominal_token_bps": "350",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.10813990661116066",
+          "delta_mse": "0.049067361058866804",
+          "velocity_energy_ratio": "0.9276809222619239",
+          "trajectory_6_to_10_hz_energy_ratio": "0.6800212974658162",
+          "audio_utterances": "5",
+          "mcd_db": "4.951981807499115",
+          "stoi": "0.8852848132631104",
+          "cer": "0.41414141414141414",
+          "cer_percent": "41.41414141414141",
+          "character_errors": "41",
+          "reference_characters": "99",
+          "utmos_mean": "2.861850214004517",
+          "utmos_std": "0.2360197613417873"
+        },
+        {
+          "condition": "rvq2",
+          "label": "RVQ128×2段",
+          "training_method": "posthoc_rvq_frozen_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "128",
+          "stages": "2",
+          "total_token_ids_per_second": "100",
+          "nominal_token_bps": "700",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.04394379564127779",
+          "delta_mse": "0.028297524464776576",
+          "velocity_energy_ratio": "0.9546408949334529",
+          "trajectory_6_to_10_hz_energy_ratio": "0.7368695146096363",
+          "audio_utterances": "5",
+          "mcd_db": "4.231542062694357",
+          "stoi": "0.9144611962545481",
+          "cer": "0.1919191919191919",
+          "cer_percent": "19.19191919191919",
+          "character_errors": "19",
+          "reference_characters": "99",
+          "utmos_mean": "3.153065013885498",
+          "utmos_std": "0.3866260159320928"
+        },
+        {
+          "condition": "rvq4",
+          "label": "RVQ128×4段",
+          "training_method": "posthoc_rvq_frozen_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "128",
+          "stages": "4",
+          "total_token_ids_per_second": "200",
+          "nominal_token_bps": "1400",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.015044993902459086",
+          "delta_mse": "0.014605976538193722",
+          "velocity_energy_ratio": "0.9970585640129856",
+          "trajectory_6_to_10_hz_energy_ratio": "0.8599373474189153",
+          "audio_utterances": "5",
+          "mcd_db": "3.2739584167587026",
+          "stoi": "0.9568817997113431",
+          "cer": "0.10101010101010101",
+          "cer_percent": "10.1010101010101",
+          "character_errors": "10",
+          "reference_characters": "99",
+          "utmos_mean": "3.271378421783447",
+          "utmos_std": "0.38953339675921667"
+        },
+        {
+          "condition": "rvq8",
+          "label": "RVQ128×8段",
+          "training_method": "posthoc_rvq_frozen_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "50",
+          "codebook_size": "128",
+          "stages": "8",
+          "total_token_ids_per_second": "400",
+          "nominal_token_bps": "2800",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.00286548177293574",
+          "delta_mse": "0.003615725738792281",
+          "velocity_energy_ratio": "0.9931286419889651",
+          "trajectory_6_to_10_hz_energy_ratio": "0.9500962566287205",
+          "audio_utterances": "5",
+          "mcd_db": "2.3156064322630376",
+          "stoi": "0.9840210398534737",
+          "cer": "0.15151515151515152",
+          "cer_percent": "15.151515151515152",
+          "character_errors": "15",
+          "reference_characters": "99",
+          "utmos_mean": "3.541952657699585",
+          "utmos_std": "0.3159183616531942"
+        },
+        {
+          "condition": "continuous_ae",
+          "label": "連続AE（参考）",
+          "training_method": "continuous_ae",
+          "window_ms": "40",
+          "token_rate_per_stage_hz": "",
+          "codebook_size": "",
+          "stages": "",
+          "total_token_ids_per_second": "",
+          "nominal_token_bps": "",
+          "trajectory_utterances": "250",
+          "trajectory_frames": "58629",
+          "normalized_mse": "0.0004722706913658544",
+          "delta_mse": "0.00034217440891936814",
+          "velocity_energy_ratio": "0.9879294574860232",
+          "trajectory_6_to_10_hz_energy_ratio": "0.9757595875316466",
+          "audio_utterances": "5",
+          "mcd_db": "1.845497220559918",
+          "stoi": "0.9900057822217532",
+          "cer": "0.15151515151515152",
+          "cer_percent": "15.151515151515152",
+          "character_errors": "15",
+          "reference_characters": "99",
+          "utmos_mean": "3.309426116943359",
+          "utmos_std": "0.2662846660253203"
+        }
+      ],
+      "utmos_model": {
+        "model": "UTMOS22 strong / SpeechMOS",
+        "repository": "https://github.com/tarepan/SpeechMOS.git",
+        "revision": "ed25eacbfa42b99156c36ebec67a733b5dbb9b79",
+        "source_hashes": {
+          "hubconf.py": "6720a77483b46844b8652ce47271339536edc45055feed76749278bd96cc5c14",
+          "hubconf_test.py": "8b37e61a54e4a41741f93fce56f2ea198166b2cab791b55448b6e4d2b7ea3331",
+          "speechmos/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/fairseq_alt.py": "a554d47bebef0eb764a048d58dbb7e1e1fca316d627c571add54faa42fe5f45b",
+          "speechmos/utmos22/strong/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "speechmos/utmos22/strong/model.py": "bffb8eba14e74e4f228684280cbd295ecffbfcd0414a5a460ca55c94f2f0a0e4",
+          "speechmos/utmos22/strong/model_test.py": "0bfe63b9ff9875a90c9ec2475837f9b44890566a68c685b9c7230f4411518041"
+        },
+        "weights_url": "https://github.com/tarepan/SpeechMOS/releases/download/v1.0.0/utmos22_strong_step7459_v1.pt",
+        "weights_sha256": "38aa51ab79e2a4e09a1449758a4b37e9cbb2e8235a49662a732d33a9ba1e9bff",
+        "scoring_policy": "full_clip_mono_16khz_single_no_extra_normalization_no_trim_no_clamp_v1",
+        "device": "cuda",
+        "packages": {
+          "torch": "2.8.0+cu128",
+          "torchaudio": "2.8.0+cu128",
+          "numpy": "1.26.4",
+          "soundfile": "0.13.1"
+        },
+        "audio_loader_sha256": "a39a786475f1dd21ef5634786a3aac2c0afbc7b394a5a0e726869a1019d5aa2d"
+      },
+      "verification": {
+        "full_utterance_waveforms_checked": 45,
+        "base_evidence_hashes_unchanged": 6,
+        "trajectory_utterances": 250,
+        "trajectory_frames": 58629,
+        "audio_utterances": 5,
+        "reference_characters": 99,
+        "previous_utmos_waveforms_checked": 15,
+        "previous_utmos_max_absolute_error": 0.0,
+        "trajectory_and_audio_rows_joined_by_condition": 7,
+        "k_ky_candidate_intervals": 9,
+        "html_audio_players": 126,
+        "summary_sections": 1,
+        "utmos_sections": 1
+      },
+      "validation": {
+        "result": "passed",
+        "scope": "45 waveform hashes, preserved baseline evidence, summary joins, previous UTMOS parity and HTML sections; no implementation changes"
+      },
+      "reused_baseline_evidence": [
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/manifest.json",
+          "sha256": "9d6db3c345b5860d77fa7b5d3b9882455bd890260ebaec2e4b69b62388685ac0"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/verification.json",
+          "sha256": "2c3f9a35d037ce956c408e74c33c83d7e5ad843065c824a6ec16b9b7a5956fb9"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/audio_aggregates.csv",
+          "sha256": "c0382cd27c257f70fbb94406a47ec9f465ebf31ca4fba99bd3b42acefaf15718"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/audio_metrics.csv",
+          "sha256": "fb526b9363e3e6533267f4fcf75f318e5b6b074001b248d50cd6191e2638605b"
+        },
+        {
+          "path": "outputs/jsut_rvq/model/config.json",
+          "sha256": "c36098f0d71ab7b92f4b5e73794efb7b4f6e73d33b9a11854abaa11b0a6c352d"
+        },
+        {
+          "path": "outputs/jsut_rvq/model/codebooks.npz",
+          "sha256": "e577084cd1d72224cc5886b2ed1c0d00e0778854146a5a79015d30075cb0a7c6"
+        }
+      ],
+      "evidence": [
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/manifest.json",
+          "sha256": "2b0e45605108379fcbef0002bf8257e44b97ced86058b809dfe89b51580f2f77"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/metrics.csv",
+          "sha256": "0fa6a5be05077dfa3cdcf384f7ef5d693526d2c1f73479478a9775cccf41cf0e"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/aggregates.csv",
+          "sha256": "1997197572a8c42b05bdf95fa9618e7257c9705df7b07d6623e624c60f1c9fde"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/audio_metrics_with_utmos.csv",
+          "sha256": "8b19aea74580711db7176b7555842d05457017049132a5bba14c619f6da1fad8"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/audio_aggregates_with_utmos.csv",
+          "sha256": "61dc916e3242e9652c8cf163d8d870544bf44d5a92cbcfd6650a160d1ea317ea"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/reconstruction_summary.csv",
+          "sha256": "fe0e8f572c653f095065f2410a6c52ee168b1b91cfd8092d3cd975ed358330d9"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/utmos/verification.json",
+          "sha256": "3f2706c2187825a2453a1da8d1c03052cfee3d3a12b206bf8cc391ae4ba4e49e"
+        },
+        {
+          "path": "outputs/jsut_rvq/comparison_verified/index.html",
+          "sha256": "2612444eb611299455b35357f4010299f4d11d6da1782fc6738109b1a90f5fc6"
+        },
+        {
+          "path": "outputs/jsut_single_vq_rvq_comparison_logs/utmos.log",
+          "sha256": "310586400ce31442465e55dc0cb96bd4187792448a9bc593dce2d99b2009abee"
+        },
+        {
+          "path": "reports/single-vq-rvq-reconstruction.md",
+          "sha256": "9b83f5ae6b992d756ec5d3fa820452b6fdfe6b22de8979fa22179d6d7b1b90b2"
         }
       ]
     }
