@@ -167,7 +167,7 @@ def enrich_report(path,aggregates,audio_aggregates):
              '<a href="utmos/audio_aggregates_with_utmos.csv">CER等との比較CSV</a> / '
              '<a href="utmos/manifest.json">モデル版・重みハッシュ・評価設定</a></p>'
              '<table><tr><th>条件</th><th>発話数</th><th>UTMOS ↑</th><th>標準偏差</th><th>CER % ↓</th></tr>'+table+'</table></section>'+MARKER_END)
-    anchor='<h2>特徴量・計算時間'
+    anchor='<h2>特徴量'
     if anchor in page: page=page.replace(anchor,section+anchor,1)
     elif '</body>' in page: page=page.replace('</body>',section+'</body>',1)
     elif '</html>' in page: page=page.replace('</html>',section+'</html>',1)
