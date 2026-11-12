@@ -71,6 +71,9 @@ WavLMのL2ノルム上限1とは別の制限で、保存補正の独立検証も
 
 一段VQ128/512とRVQ1/2/4/8段の再構成比較は[統合比較結果](../reports/single-vq-rvq-reconstruction.md)を参照。
 
+音声プレーヤーだけを並べた[聴き比べページ](../outputs/jsut_vq_rvq_listening/index.html)は
+`python3 scripts/create_vq_rvq_listening.py` で作成する。既存の45音声を参照し、波形ハッシュとリンクを確認する。
+
 ```sh
 # WavLM/PPG比較の保存済み75音声を採点し、試聴レポートにUTMOS列と集計を追加
 bash scripts/evaluate_utmos.sh

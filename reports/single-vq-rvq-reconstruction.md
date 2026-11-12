@@ -1,6 +1,6 @@
 # 一段VQとRVQの再構成比較
 
-[試聴・統合比較表](../outputs/jsut_rvq/comparison_verified/index.html#single-vq-rvq-summary) / [統合CSV](../outputs/jsut_rvq/comparison_verified/utmos/reconstruction_summary.csv)
+[音声聴き比べ（シンプル版）](../outputs/jsut_vq_rvq_listening/index.html) / [試聴・統合比較表](../outputs/jsut_rvq/comparison_verified/index.html#single-vq-rvq-summary) / [統合CSV](../outputs/jsut_rvq/comparison_verified/utmos/reconstruction_summary.csv)
 
 編集・FBなしで、元音声から抽出した調音軌道を量子化・復号し、音声を合成した場合の比較。
 既存の検証済み軌道・音声・指標を保持し、保存済み45音声へUTMOS22 strongを追加した。再学習・再合成・ASRの再実行は行っていない。
