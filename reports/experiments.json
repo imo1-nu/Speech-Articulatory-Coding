@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at_utc": "20261112T092146Z",
+  "generated_at_utc": "20261112T093827Z",
   "repository_paths_are_relative": true,
   "outputs_versioned_in_git": false,
   "historical_provenance_note": "初回整理以前のJSUT実行時はコードが未コミット。supporting_implementation_commitは保存した対応コードであり、当時の厳密な版ではない。以後の実験は取得できる実行ソース版を記録する。",
@@ -5816,9 +5816,17 @@
         },
         {
           "path": "reports/single-vq-rvq-reconstruction.md",
-          "sha256": "9b83f5ae6b992d756ec5d3fa820452b6fdfe6b22de8979fa22179d6d7b1b90b2"
+          "sha256": "52491e9ac33be3aac071119e4fc17e170a412c5227c2189f6a5da8e50d76ff9d"
         }
-      ]
+      ],
+      "listening_page": "outputs/jsut_vq_rvq_listening/index.html",
+      "listening_page_implementation_commit": "e84ea17",
+      "listening_page_validation": {
+        "utterances": 5,
+        "audio_players": 45,
+        "audio_hashes_and_links_verified": true,
+        "page_sha256": "e948d177824a36dfcd12c8e639ae7b4ed20029ed60fe95b4cfd3c25c6603d2f7"
+      }
     }
   ]
 }
