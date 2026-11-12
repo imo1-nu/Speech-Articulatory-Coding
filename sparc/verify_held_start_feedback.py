@@ -31,8 +31,8 @@ def main():
     for path,expected in manifest['dependencies'].items():
         if sha256_file(Path(path))!=expected:raise ValueError('Input dependency changed')
     model,mean,std = load_rvq(Path('outputs/jsut_rvq/model'),8,args.device)
-    kind = manifest['settings'].get('objective','wavlm');key = distance_key(kind)
-    error_key = 'maximum_'+key+'_error'
+    kind = manifest['settings'].get('objective','wavlm');metric_key = distance_key(kind)
+    error_key = 'maximum_'+metric_key+'_error'
     obj = FeatureObjective(kind,args.device)
     if obj.metadata!=manifest['feature']:raise ValueError('Feature model changed')
     verification = {'utterances':len(manifest['inputs']),'waveforms_checked':0,'control_decisions_checked':0,
@@ -59,7 +59,7 @@ def main():
             if sha256_file(path)!=row['audio_sha256']:raise ValueError('Saved audio changed')
             wave = read_audio(path);values = obj.extract(wave[None],fresh=True)[0]
             n = min(len(target),len(values));distance = float(obj.distances(target[:n],values[:n]).mean())
-            verification[error_key] = max(verification[error_key],abs(distance-row[key]))
+            verification[error_key] = max(verification[error_key],abs(distance-row[metric_key]))
             verification['waveforms_checked']+=1
             if row['condition'] not in ('unedited','no_feedback','feedback'):continue
             folder = path.parent;result = dict(np.load(folder/'result.npz'))
