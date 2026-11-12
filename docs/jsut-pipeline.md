@@ -43,6 +43,30 @@ FBなしもモデル予測に基づく候補探索を行う。FBありは出力�
 編集履歴の再生・確定済みトークンと波形の不変性・観測の60 ms遅延・FBなしの補正ゼロを検証する。
 MCD/STOI/F0/VUVの参照は元軌道合成、CERはWhisper large-v3とJSUT正解文。
 
+### 同じ固定初期値でPPG編集と比較する
+
+```sh
+# PPG目標でFBなし／ありを生成（WavLM側の既存出力は保持）
+bash scripts/held_start_feedback.sh --objective ppg
+bash scripts/verify_held_start_feedback.sh --run-dir outputs/jsut_held_start_ppg_feedback
+# 保存済みの両方式を比較し、共通条件の一致を検証
+bash scripts/compare_held_start_features.sh
+bash scripts/evaluate_utmos.sh --run-dir outputs/jsut_held_start_feature_comparison
+```
+
+PPG出力は `outputs/jsut_held_start_ppg_feedback/`、まとめた試聴ページは
+`outputs/jsut_held_start_feature_comparison/index.html`。
+比較処理は両方式の探索を再実行せず、保存音声をコピーしてCER・音響指標を波形ハッシュで対応付ける。
+共通6条件×5発話の30波形がバイト単位で一致し、初期位置・初期トークン・復号軌道・F0・音量・話者も一致することを確認する。
+WavLMとPPGの編集音声4条件を加え、10条件×5発話の50音声を並べる。
+両特徴量を保存波形から新たに抽出し、同じ音声に対するWavLM距離とPPG JSも比較する。
+
+PPGは固定済み日本語35音素モデルの100 Hz確率列で、目標は元音声のPPG、距離はJS。
+FBは観測と発行時予測の平均音素確率のlog比をEMAで更新し、各成分を−1〜1に制限する既存方式を用いる。
+WavLMのL2ノルム上限1とは別の制限で、保存補正の独立検証も方式ごとに行う。
+音声入力の遅延は両方式とも60 msだが、最初の観測はPPGで100 ms、WavLMで80 msからとなる。
+探索窓・候補・更新幅・1段目遷移NLL重み0.03は揃えるが、JSとcosine距離の尺度が違うため、同じ実効的制約強度とは解釈しない。
+
 ## UTMOSによる追加評価
 
 ```sh

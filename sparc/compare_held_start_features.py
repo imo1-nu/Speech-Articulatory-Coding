@@ -135,6 +135,8 @@ def main():
     record_indices = {k:indexed_records(m) for k,m in manifests.items()}
     manifest = {'complete':False,'inputs_signature':signature,'source_commit':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                 'source_sha256':sha256_file(Path(__file__)),'verification':verification,
+                'sources':{name:sha256_file(Path(__file__).with_name(name)) for name in
+                           ('compare_held_start_features.py','feedback_features.py','japanese_ppg.py','evaluate_generated_audio.py')},
                 'features':{k:f.metadata for k,f in features.items()},'inputs':manifests['wavlm']['inputs'],'records':[],
                 'settings':{'shared':manifests['ppg']['settings'],'source_runs':{k:str(v) for k,v in directories.items()}},
                 'audio_metric_reference':'original_ema','asr_model':manifests['ppg']['asr_model'],
